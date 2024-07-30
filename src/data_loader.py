@@ -94,7 +94,7 @@ class DataLoader:
     # GET STRAIN DATA FROM NUMPY ARRAY
     # ///////////////////////////////////////////////////////////////
     def get_npy_data(self):
-        self.data = np.load(self.fullpath)
+        self.data = np.load(self.fullpath).T
         self.temporal_len = self.data.shape[0]
         self.spatial_len = self.data.shape[1]
 
@@ -107,3 +107,7 @@ class DataLoader:
             np.save(self.fullpath, self.rail_view_data)
         else:
             np.save(self.fullpath, self.data)
+
+    # GETTERS
+    def get_data(self):
+        return self.data

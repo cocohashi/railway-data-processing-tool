@@ -4,6 +4,8 @@ import logging
 os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments only allowed
 
 from src.data_loader import DataLoader
+from src.data_plotter import DataPlotter
+from src.signal_processor import SignalProcessor
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -31,13 +33,44 @@ else:
     data_path = "../data/ETS"
     # ----------------------------
 
+# -----------------------------------------------------------------------------------------------------------------
+# Confing Parameters
+# -----------------------------------------------------------------------------------------------------------------
+
+config = {
+
+    # Signal Processor
+    "signal": {
+        "N": 5,  # int: Downsampling-Factor: Number of Samples to be downsampled
+        "f_order": 4,  # int: The order of the Butterworth filter.
+        "Wn": 0.8,  # int or list: Cutoff frequencies of Butterworth filter
+        "btype": "hp",  # str: Butterworth filter type. {‘lowpass’, ‘highpass’, ‘bandpass’, ‘bandstop’}, optional
+        "fs": 1000,  # int: The sampling frequency of the digital system in Hz.
+    },
+
+    # Data Plotting
+    "plot-matrix": {
+        "section": 0,
+        "vmin": None,
+        "vmax": None,
+        "xlabel": "x-axis (samples)",
+        "ylabel": "y-axis (samples)",
+        "title": "",
+        "cmap": "seismic",
+        "figsize": None,
+        "extent": None
+    }
+}
+# -----------------------------------------------------------------------------------------------------------------
+
 
 def main():
-    sample = 0
+    sample = 1
     files = [filepath for filepath in os.listdir(data_path)]
-    data_loader = DataLoader(fullpath=os.path.join(data_path, files[sample]))
-
-    logger.info(f"data: {data_loader.data}")
+    data = DataLoader(fullpath=os.path.join(data_path, files[sample])).get_data()
+    filtered_data = SignalProcessor(data=data, **config).get_filtered_data()
+    data_plotter = DataPlotter(filtered_data, **config['plot-matrix'])
+    data_plotter.plot_matrix()
 
 
 if __name__ == "__main__":
