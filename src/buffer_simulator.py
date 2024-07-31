@@ -36,25 +36,13 @@ class BufferSimulator:
 
             if self.buffer.shape[0] >= temporal_len * self.slots:
                 if self.start:
-                    # plot actual buffer
-                    logger.info(f"plotting buffer...\nbuffer shape: {self.buffer.shape}")
-                    # data_plotter = DataPlotter(buffer, **self.config['plot-matrix'])
-                    # data_plotter.plot_matrix()
                     self.start = False
                     yield self.buffer
 
                 self.buffer = np.concatenate((self.buffer, filtered_data))
-                logger.info(f"buffer shape after concat: {self.buffer.shape}")
-
                 new_buffer = self.buffer[temporal_len:, :]
-                logger.info(f"new buffer shape: {new_buffer.shape}")
-
-                # data_plotter = DataPlotter(new_buffer, **self.config['plot-matrix'])
-                # data_plotter.plot_matrix()
-
                 self.buffer = new_buffer
                 yield self.buffer
 
             else:
                 self.buffer = np.concatenate((self.buffer, filtered_data))
-
