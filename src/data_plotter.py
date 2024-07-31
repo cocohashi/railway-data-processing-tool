@@ -30,6 +30,8 @@ class DataPlotter:
         self.extent = config.get('extent')
         self.fig = None
 
+        self.plot_matrix()
+
     def plot_matrix(self):
         # ---- Set default colorbar limits:
         # vmin and vmax corresponds to the 2nd and 98th percentile of the data:

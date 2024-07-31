@@ -3,9 +3,8 @@ import logging
 
 os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments only allowed
 
-from src.data_loader import DataLoader
 from src.data_plotter import DataPlotter
-from src.signal_processor import SignalProcessor
+from src.buffer_simulator import BufferSimulator
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -61,16 +60,14 @@ config = {
         "extent": None
     }
 }
+
+
 # -----------------------------------------------------------------------------------------------------------------
 
 
 def main():
-    sample = 1
-    files = [filepath for filepath in os.listdir(data_path)]
-    data = DataLoader(fullpath=os.path.join(data_path, files[sample])).get_data()
-    filtered_data = SignalProcessor(data=data, **config).get_filtered_data()
-    data_plotter = DataPlotter(filtered_data, **config['plot-matrix'])
-    data_plotter.plot_matrix()
+    for buffer in BufferSimulator(data_path, **config):
+        DataPlotter(buffer, **config['plot-matrix'])
 
 
 if __name__ == "__main__":
