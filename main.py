@@ -4,7 +4,7 @@ import logging
 os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments only allowed
 
 from src.data_plotter import DataPlotter
-from src.buffer_simulator import BufferSimulator
+from src.batch_data_generator import BatchDataGenerator
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -66,8 +66,8 @@ config = {
 
 
 def main():
-    for buffer in BufferSimulator(data_path, **config):
-        DataPlotter(buffer, **config['plot-matrix'])
+    for batch in BatchDataGenerator(data_path, **config):
+        DataPlotter(batch, **config['plot-matrix'])
 
 
 if __name__ == "__main__":

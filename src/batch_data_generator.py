@@ -18,7 +18,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-class BufferSimulator:
+class BatchDataGenerator:
     def __init__(self, data_path, **config):
         self.data_path = data_path
         self.config = config
