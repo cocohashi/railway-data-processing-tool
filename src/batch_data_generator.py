@@ -23,7 +23,7 @@ class BatchDataGenerator:
         self.data_path = data_path
         self.config = config
         self.filenames = [filename for filename in os.listdir(data_path)]
-        self.max_files = 1
+        self.max_files = 3
         self.temporal_len = 0
         self.spatial_len = 0
         self.batch_temporal_length = 5  # seconds

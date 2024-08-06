@@ -5,6 +5,7 @@ os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments
 
 from src.data_plotter import DataPlotter
 from src.batch_data_generator import BatchDataGenerator
+from src.train_detector import TrainDetector
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -58,6 +59,14 @@ config = {
         "cmap": "seismic",
         "figsize": None,
         "extent": None
+    },
+
+    # Section Map
+    "section-map": {
+        "S01": (95, 200),
+        "S02": (201, 330),
+        "S03": (331, 370),
+        "S04": (371, 635),
     }
 }
 
@@ -67,7 +76,9 @@ config = {
 
 def main():
     for batch in BatchDataGenerator(data_path, **config):
-        DataPlotter(batch, **config['plot-matrix'])
+        # DataPlotter(batch, **config['plot-matrix'])
+        section_status = TrainDetector(batch, **config).get_section_status()
+        logger.info(f"section_status: {section_status}")
 
 
 if __name__ == "__main__":
