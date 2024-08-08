@@ -22,8 +22,7 @@ logger.addHandler(handler)
 
 # class BufferManager:
 class BufferManager:
-    def __init__(self, batch, **config):
-        self.batch = batch
+    def __init__(self, **config):
         self.config = config
 
         # Signal Config
@@ -44,6 +43,7 @@ class BufferManager:
         self.dt = self.N * (1 / self.fs)  # Time [s]
         self.train_time_width = 1.25  # Time [s]
         self.section_number = len(self.section_map.keys())
+        self.section_ids = list(self.section_map.keys())
 
         # Local variables (outputs)
         self.section_train_speed_mean_ms = [speed / 3.6 for speed in self.section_train_speed_mean]  # Speed [m / s]
@@ -57,15 +57,17 @@ class BufferManager:
 
         self.start_margin_batch_number = int(np.round(self.start_margin_time / self.batch_time))
         self.buffer_time = self.batch_time * self.start_margin_batch_number
-        self.output_block_time = [self.start_margin_time + section_time + self.end_margin_time for section_time in
+        self.output_chunk_time = [self.start_margin_time + section_time + self.end_margin_time for section_time in
                                   self.section_map_train_time_ranges]
-        self.num_batches_to_save = [int(np.round(time / self.batch_time)) for time in self.output_block_time]
+        self.num_batches_to_save = [int(np.round(time / self.batch_time)) for time in self.output_chunk_time]
         self.buffer_batch_num = max(self.num_batches_to_save)
         self.batch_index_ref = [(self.buffer_batch_num - batch + self.start_margin_batch_number) for batch in
                                 self.num_batches_to_save]
 
-        # self._info()
-        self.train_detector()
+        # Buffer Config
+        self.buffer = []
+        self.output_chunk = []
+        self.buffer_rebase_flag = False
 
     def print_info(self):
         logger.info("\n ===========================\n     Buffer Manager Info    \n ===========================")
@@ -76,7 +78,7 @@ class BufferManager:
         print(f" --> Sampling Time [s]:                 {self.dt}\n")
         print("  Section Map: ")
         print(f"  --> Number of Sections:               {self.section_number}")
-        print(f"  --> Section ID's:                     {list(self.section_map.keys())}")
+        print(f"  --> Section ID's:                     {self.section_ids}")
         print(f"  --> Train Time Width [s]:             {self.train_time_width}")
         print(f"  --> Section Map:                      {self.section_map}\n")
         print("  Batch Manager: ")
@@ -93,14 +95,30 @@ class BufferManager:
         print(f"  --> Space Ranges [m]:                 {self.section_map_space_ranges}")
         print(f"  --> Numb. of Batches at Start Margin: {self.start_margin_batch_number}")
         print(f"  --> Buffer Time:                      {self.buffer_time}")
+        print(f"  --> Output Chunk Time [s]:            {self.output_chunk_time}")
         print(f"  --> Numb. of Batches in Buffer:       {self.buffer_batch_num}")
         print(f"  --> Numb. of Batches to Save per Sec: {self.num_batches_to_save}")
         print(f"  --> Buffer's Batch index reference:   {self.batch_index_ref}")
         print(f"  ----------------------------------------------------------------------------------------------------")
 
-    def train_detector(self):
-        section_status = TrainDetector(self.batch, **self.config).get_section_status()
-        section_status_info = [{"section-id": ss.get("section-id"),
-                                "status": ss.get("status")}
-                               for ss in section_status]
-        logger.info(f"section_status_info: {section_status_info}")
+    def compute_batch(self, batch):
+        item = TrainDetector(batch, **self.config).get_section_status()
+        item_info = [{"section-id": ss.get("section-id"),
+                      "batch-id": ss.get("batch-id"),
+                      "status": ss.get("status")}
+                     for ss in item]
+
+        # Fill Buffer if not rebased
+        if len(self.buffer) < self.buffer_batch_num:
+            self.buffer.append(item_info)
+            logger.info(
+                f"Filling Buffer... num of batches {len(self.buffer)}:\n{self.buffer}\n---------------------------\n")
+
+        else:
+            self.buffer_rebase_flag = True
+
+        # Roll Buffer when rebased
+        if self.buffer_rebase_flag:
+            self.buffer.pop(0)
+            self.buffer.append(item_info)
+            logger.info(f"BUFFER STATE:\n{self.buffer}\n---------------------------\n")

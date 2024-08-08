@@ -84,11 +84,11 @@ config = {
 
 
 def main():
+    buffer_manager = BufferManager(**config)
     for batch in BatchDataGenerator(data_path, **config):
         # DataPlotter(batch, **config['plot-matrix'])
-        buffer_manager = BufferManager(batch, **config)
-
-    buffer_manager.print_info()
+        buffer_manager.compute_batch(batch)
+    # buffer_manager.print_info()
 
 
 if __name__ == "__main__":
