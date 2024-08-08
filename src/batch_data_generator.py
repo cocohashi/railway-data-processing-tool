@@ -22,14 +22,17 @@ class BatchDataGenerator:
     def __init__(self, data_path, **config):
         self.data_path = data_path
         self.config = config
+
         self.filenames = [filename for filename in os.listdir(data_path)]
-        self.max_files = 3
+        self.max_files = 1
         self.temporal_len = 0
         self.spatial_len = 0
-        self.batch_temporal_length = 5  # seconds
-        self.fs = 1000
-        self.N = 1
-        self.dt = (1 / self.fs) * self.N
+
+        self.N = config['signal']['N']
+        self.fs = config['signal']['fs']  # Frequency [Hz]
+        self.dt = self.N * (1 / self.fs)  # Time [s]
+
+        self.batch_temporal_length = config['buffer-manager']['batch-time']  # Time [s]
 
     def __iter__(self):
         for sample in range(self.max_files):
@@ -44,7 +47,7 @@ class BatchDataGenerator:
             for x in range(0, self.temporal_len, new_batch_idx):
                 batch = filtered_data[x: x + new_batch_idx, :]
                 t1 = time.time()
-                time.sleep(max(0.0, self.batch_temporal_length - (t1 - t0)))
+                # time.sleep(max(0.0, self.batch_temporal_length - (t1 - t0)))
                 yield batch
 
     @staticmethod

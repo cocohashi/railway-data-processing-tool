@@ -49,7 +49,9 @@ class TrainDetector:
         return False
 
     def compute_section_status(self):
-        return [{"section-id": list(section.keys())[0], "status": self.train_detector(list(section.values())[0])}
+        return [{"section-id": list(section.keys())[0],
+                 "status": self.train_detector(list(section.values())[0]),
+                 "batch": self.batch}
                 for section in self.section_batches]
 
     # Getters

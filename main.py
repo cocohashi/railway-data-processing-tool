@@ -5,7 +5,7 @@ os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments
 
 from src.data_plotter import DataPlotter
 from src.batch_data_generator import BatchDataGenerator
-from src.train_detector import TrainDetector
+from src.buffer_manager import BufferManager
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -67,6 +67,15 @@ config = {
         "S02": (201, 330),
         "S03": (331, 370),
         "S04": (371, 635),
+    },
+
+    # Buffer Manager
+    "buffer-manager": {
+        "batch-time": 5,  # Time [s]
+        "spatial-resolution": 5,  # Space [m]
+        "section-train-speed-mean": [144, 144, 144, 144],  # Speed [Km / h]
+        "start-margin-time": 10,  # Time [s]
+        "end-margin-time": 10,  # Time [s]
     }
 }
 
@@ -77,8 +86,9 @@ config = {
 def main():
     for batch in BatchDataGenerator(data_path, **config):
         # DataPlotter(batch, **config['plot-matrix'])
-        section_status = TrainDetector(batch, **config).get_section_status()
-        logger.info(f"section_status: {section_status}")
+        buffer_manager = BufferManager(batch, **config)
+
+    buffer_manager.print_info()
 
 
 if __name__ == "__main__":
