@@ -106,10 +106,11 @@ class BufferManager:
 
     def compute_batch(self, batch):
         item = TrainDetector(batch, **self.config).get_section_status()
-        item_info = [{"section-id": ss.get("section-id"),
-                      "batch-id": ss.get("batch-id"),
-                      "status": ss.get("status")}
-                     for ss in item]
+        # Debugging
+        # item_info = [{"section-id": ss.get("section-id"),
+        #               "batch-id": ss.get("batch-id"),
+        #               "status": ss.get("status")}
+        #              for ss in item]
 
         if len(self.buffer) < self.buffer_batch_num:
             # Fill Buffer if not rebased
@@ -137,14 +138,20 @@ class BufferManager:
                     batch_data = [batch[index]['batch-data'] for i, batch in enumerate(self.buffer)
                                   if i >= (self.buffer_batch_num - self.num_batches_to_save[index])]
                     train_data = self.concat_matrix_list(batch_data)
-                    logger.info(f"new train_data (shape): {train_data.shape}")
+                    complete = not section_status[-1]
+                    logger.info(f"new train_data (complete: {complete}) (shape): {train_data.shape}")
+
+                    # Plot data
                     data_plotter = DataPlotter(train_data, **self.config['plot-matrix'])
                     data_plotter.set_title(f"New Train: section {section_id}")
                     data_plotter.plot_matrix()
+
+                    # Save data
                     self.output_chunk.append(
                         {
                             "section-id": section_id,
                             "train-data": train_data,
+                            "complete": complete
                         }
                     )
 
