@@ -66,7 +66,7 @@ config = {
         "S01": (95, 200),
         "S02": (201, 330),
         "S03": (331, 370),
-        "S04": (371, 635),
+        # "S04": (371, 635),
     },
 
     # Buffer Manager
@@ -75,7 +75,7 @@ config = {
         "spatial-resolution": 5,  # Space [m]
         "section-train-speed-mean": [144, 144, 144, 144],  # Speed [Km / h]
         "start-margin-time": 10,  # Time [s]
-        "end-margin-time": 10,  # Time [s]
+        "end-margin-time": 20,  # Time [s]
     }
 }
 
