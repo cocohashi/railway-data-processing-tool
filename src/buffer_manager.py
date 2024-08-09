@@ -4,6 +4,7 @@ import numpy as np
 import logging
 
 from src.train_detector import TrainDetector
+from src.data_plotter import DataPlotter
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -61,13 +62,15 @@ class BufferManager:
                                   self.section_map_train_time_ranges]
         self.num_batches_to_save = [int(np.round(time / self.batch_time)) for time in self.output_chunk_time]
         self.buffer_batch_num = max(self.num_batches_to_save)
-        self.batch_index_ref = [(self.buffer_batch_num - batch + self.start_margin_batch_number) for batch in
-                                self.num_batches_to_save]
+        self.train_event_index_ref = [(self.buffer_batch_num - batch + self.start_margin_batch_number) for batch in
+                                      self.num_batches_to_save]
 
         # Buffer Config
         self.buffer = []
         self.output_chunk = []
         self.buffer_rebase_flag = False
+
+        self.print_info()
 
     def print_info(self):
         logger.info("\n ===========================\n     Buffer Manager Info    \n ===========================")
@@ -98,7 +101,7 @@ class BufferManager:
         print(f"  --> Output Chunk Time [s]:            {self.output_chunk_time}")
         print(f"  --> Numb. of Batches in Buffer:       {self.buffer_batch_num}")
         print(f"  --> Numb. of Batches to Save per Sec: {self.num_batches_to_save}")
-        print(f"  --> Buffer's Batch index reference:   {self.batch_index_ref}")
+        print(f"  --> Train event index reference:      {self.train_event_index_ref}")
         print(f"  ----------------------------------------------------------------------------------------------------")
 
     def compute_batch(self, batch):
@@ -108,17 +111,48 @@ class BufferManager:
                       "status": ss.get("status")}
                      for ss in item]
 
-        # Fill Buffer if not rebased
         if len(self.buffer) < self.buffer_batch_num:
-            self.buffer.append(item_info)
-            logger.info(
-                f"Filling Buffer... num of batches {len(self.buffer)}:\n{self.buffer}\n---------------------------\n")
+            # Fill Buffer if not rebased
+            self.buffer.append(item)
 
         else:
             self.buffer_rebase_flag = True
 
-        # Roll Buffer when rebased
         if self.buffer_rebase_flag:
+            self.compute_output_chunk()
+
+            # Roll Buffer when rebased
             self.buffer.pop(0)
-            self.buffer.append(item_info)
-            logger.info(f"BUFFER STATE:\n{self.buffer}\n---------------------------\n")
+            self.buffer.append(item)
+            # logger.info(f"BUFFER STATE:\n{self.buffer}\n---------------------------\n")
+
+    def compute_output_chunk(self):
+        for index in range(len(self.section_ids)):
+            section_status = [batch[index]['status'] for batch in self.buffer]
+            section_id = self.section_ids[index]
+            logger.info(f"section-id: {section_id}, status: {section_status}")
+            if any(section_status):
+                train_event_min_index = min([s for s, r in enumerate(section_status) if r])
+                if train_event_min_index == self.train_event_index_ref[index]:
+                    batch_data = [batch[index]['batch-data'] for i, batch in enumerate(self.buffer)
+                                  if i >= (self.buffer_batch_num - self.num_batches_to_save[index])]
+                    train_data = self.concat_matrix_list(batch_data)
+                    logger.info(f"new train_data (shape): {train_data.shape}")
+                    data_plotter = DataPlotter(train_data, **self.config['plot-matrix'])
+                    data_plotter.set_title(f"New Train: section {section_id}")
+                    data_plotter.plot_matrix()
+                    self.output_chunk.append(
+                        {
+                            "section-id": section_id,
+                            "train-data": train_data,
+                        }
+                    )
+
+    @staticmethod
+    def concat_matrix_list(matrix_list: list):
+        shapes = [matrix.shape for matrix in matrix_list]
+        logger.info(f"Matrix Shapes: {shapes}")
+        new_matrix = np.ndarray((0, matrix_list[0].shape[1]))
+        for matrix in matrix_list:
+            new_matrix = np.concatenate([new_matrix, matrix])
+        return new_matrix

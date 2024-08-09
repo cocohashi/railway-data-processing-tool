@@ -30,7 +30,7 @@ class DataPlotter:
         self.extent = config.get('extent')
         self.fig = None
 
-        self.plot_matrix()
+        # self.plot_matrix()
 
     def plot_matrix(self):
         # ---- Set default colorbar limits:
@@ -66,3 +66,10 @@ class DataPlotter:
         plt.show()
 
         self.fig = fig
+
+    # Getters & Setters
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
