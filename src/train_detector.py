@@ -50,8 +50,9 @@ class TrainDetector:
         return False
 
     def compute_section_status(self):
+        batch_id = uuid4()
         return [{"section-id": list(section.keys())[0],
-                 "batch-id": uuid4(),
+                 "batch-id": batch_id,
                  "status": self.train_detector(list(section.values())[0]),
                  "batch": self.batch}
                 for section in self.section_batches]
