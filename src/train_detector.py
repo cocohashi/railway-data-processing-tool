@@ -54,7 +54,7 @@ class TrainDetector:
         return [{"section-id": list(section.keys())[0],
                  "batch-id": batch_id,
                  "status": self.train_detector(list(section.values())[0]),
-                 "batch": self.batch}
+                 "batch-data": list(section.values())[0]}
                 for section in self.section_batches]
 
     # Getters
