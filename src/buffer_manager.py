@@ -65,12 +65,16 @@ class BufferManager:
         self.train_event_index_ref = [(self.buffer_batch_num - batch + self.start_margin_batch_number) for batch in
                                       self.num_batches_to_save]
 
-        # Buffer Config
-        self.buffer = []
-        self.output_chunk = []
-        self.buffer_rebase_flag = False
+        # Batch Buffer Config
+        self.batch_buffer = {key: [] for key, _ in self.section_map.items()}
+        self.batch_buffer_rebase_flags = {key: False for key, _ in self.section_map.items()}
 
-        self.print_info()
+        # Chunk Buffer Config
+        self.chunk_buffer_num = 6
+        self.chunk_buffer = {key: [] for key, _ in self.section_map.items()}
+
+        # Debug
+        # self.print_info()
 
     def print_info(self):
         logger.info("\n ===========================\n     Buffer Manager Info    \n ===========================")
@@ -104,61 +108,118 @@ class BufferManager:
         print(f"  --> Train event index reference:      {self.train_event_index_ref}")
         print(f"  ----------------------------------------------------------------------------------------------------")
 
-    def compute_batch(self, batch):
-        item = TrainDetector(batch, **self.config).get_section_status()
+    def generate_train_capture(self, batch):
+        processed_batch = TrainDetector(batch, **self.config).get_section_status()
+
         # Debugging
-        # item_info = [{"section-id": ss.get("section-id"),
-        #               "batch-id": ss.get("batch-id"),
-        #               "status": ss.get("status")}
-        #              for ss in item]
+        # processed_batch_info = [{"section-id": ss.get("section-id"),
+        #                          "batch-id": ss.get("batch-id"),
+        #                          "status": ss.get("status")}
+        #                         for ss in processed_batch]
+        # logger.info(f"PROCESSED BATCH: {processed_batch_info}")
 
-        if len(self.buffer) < self.buffer_batch_num:
-            # Fill Buffer if not rebased
-            self.buffer.append(item)
+        for section_id in self.section_ids:
+            # Get processed batch of a particular section
+            processed_batch_section_id = \
+                [section_batch for section_batch in processed_batch if section_batch['section-id'] == section_id][0]
 
-        else:
-            self.buffer_rebase_flag = True
+            if len(self.batch_buffer[section_id]) < self.buffer_batch_num:
+                # Fill Buffer if not rebased
+                self.batch_buffer[section_id].append(processed_batch_section_id)
 
-        if self.buffer_rebase_flag:
-            self.compute_output_chunk()
+                # Debug
+                logger.info(
+                    f"BATCH BUFFER STATE  (FILLING)         :: section-id:"
+                    f" {section_id}, buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_batch_num}")
 
-            # Roll Buffer when rebased
-            self.buffer.pop(0)
-            self.buffer.append(item)
-            # logger.info(f"BUFFER STATE:\n{self.buffer}\n---------------------------\n")
+            else:
+                self.batch_buffer_rebase_flags[section_id] = True
 
-    def compute_output_chunk(self):
-        for index in range(len(self.section_ids)):
-            section_status = [batch[index]['status'] for batch in self.buffer]
-            section_id = self.section_ids[index]
-            logger.info(f"section-id: {section_id}, status: {section_status}")
+            if self.batch_buffer_rebase_flags[section_id]:
+                for chunk in self.generate_chunks():
+                    section_id = chunk['section-id']
+
+                    # Debug
+                    logger.info(f"BATCH BUFFER STATE: [REBASED]         :: section-id: {section_id}")
+
+                    if not chunk['complete']:
+                        self.chunk_buffer[section_id].append(chunk['train-data'])
+
+                        # Debug
+                        logger.info(f"CHUNK BUFFER STATE: [NOT COMPLETED]   :: section-id: {section_id}: "
+                                    f"buffer-length: {len(self.chunk_buffer[section_id])}")
+
+                    else:
+                        # Debug
+                        logger.info(f"CHUNK BUFFER STATE: [COMPLETED]       :: section-id: {section_id}: "
+                                    f"buffer-length: {len(self.chunk_buffer[section_id])}")
+
+                        if not self.chunk_buffer[section_id]:
+                            yield chunk
+                        else:
+                            # Append chunk to section's chunk-buffer
+                            self.chunk_buffer[section_id].append(chunk['train-data'])
+                            section_train_data = self.concat_matrix_list(self.chunk_buffer[section_id])
+
+                            # Debug
+                            logger.info(f"CONCAT CHUNKS: section-id: {section_id}: "
+                                        f"Capture-shape: {section_train_data.shape}")
+
+                            # Delete chunk buffer of a section
+                            self.chunk_buffer.update({section_id: []})
+
+                            # Yield new concatenated chunk
+                            yield {"section-id": section_id, "complete": True, "train-data": section_train_data}
+
+                # Roll Buffer when rebased
+                if self.batch_buffer[section_id]:
+                    self.batch_buffer[section_id].pop(0)
+                    self.batch_buffer[section_id].append(processed_batch_section_id)
+
+                    # Debug
+                    section_status = [batch['status'] for batch in self.batch_buffer[section_id]]
+                    logger.info(f"BATCH BUFFER STATE  (ROLLING)         :: section-id: {section_id},"
+                                f" section_status: {section_status}")
+
+    def generate_chunks(self):
+        for index, section_id in enumerate(self.section_ids):
+            # Get a list of the train-event status batches stored in the buffer for a particular section
+            section_status = [batch['status'] for batch in self.batch_buffer[section_id]]
+
+            # Debug
+            logger.info(f"BATCH BUFFER STATE  (CHUNK-GENERATOR) :: section-id: {section_id},"
+                        f" section_status: {section_status}")
+
             if any(section_status):
+                # Get the buffer index where the oldest train-event chunk is located
                 train_event_min_index = min([s for s, r in enumerate(section_status) if r])
                 if train_event_min_index == self.train_event_index_ref[index]:
-                    batch_data = [batch[index]['batch-data'] for i, batch in enumerate(self.buffer)
+                    # Select batches from buffer to generate a chunk
+                    batch_data = [batch['batch-data'] for i, batch in enumerate(self.batch_buffer[section_id])
                                   if i >= (self.buffer_batch_num - self.num_batches_to_save[index])]
+
+                    # Concat batch data to get a chunk
                     train_data = self.concat_matrix_list(batch_data)
+
+                    # If there isn't train in the last batch mark chunk as complete
                     complete = not section_status[-1]
-                    logger.info(f"new train_data (complete: {complete}) (shape): {train_data.shape}")
 
-                    # Plot data
-                    data_plotter = DataPlotter(train_data, **self.config['plot-matrix'])
-                    data_plotter.set_title(f"New Train: section {section_id}")
-                    data_plotter.plot_matrix()
+                    # Delete section-id buffer
+                    self.batch_buffer.update({section_id: []})
 
-                    # Save data
-                    self.output_chunk.append(
-                        {
-                            "section-id": section_id,
-                            "train-data": train_data,
-                            "complete": complete
-                        }
-                    )
+                    # Debug
+                    logger.info(
+                        f"NEW CHUNK GENERATED                   :: section-id: {section_id}, complete: {complete},"
+                        f" train_data (shape): {train_data.shape}")
+
+                    yield {
+                        "section-id": section_id,
+                        "train-data": train_data,
+                        "complete": complete
+                    }
 
     @staticmethod
-    def concat_matrix_list(matrix_list: list):
-        shapes = [matrix.shape for matrix in matrix_list]
-        logger.info(f"Matrix Shapes: {shapes}")
+    def concat_matrix_list(matrix_list):
         new_matrix = np.ndarray((0, matrix_list[0].shape[1]))
         for matrix in matrix_list:
             new_matrix = np.concatenate([new_matrix, matrix])

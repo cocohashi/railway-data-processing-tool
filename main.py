@@ -86,9 +86,17 @@ config = {
 def main():
     buffer_manager = BufferManager(**config)
     for batch in BatchDataGenerator(data_path, **config):
-        # DataPlotter(batch, **config['plot-matrix'])
-        buffer_manager.compute_batch(batch)
-    # buffer_manager.print_info()
+        for chunk in buffer_manager.generate_train_capture(batch):
+            section_id = chunk['section-id']
+            train_data = chunk['train-data']
+
+            # Debug
+            logger.info(f" -------> CHUNK GENERATED: section-id: {section_id}, train-data (shape): {train_data.shape}")
+
+            # Plot data
+            data_plotter = DataPlotter(chunk['train-data'], **config['plot-matrix'])
+            data_plotter.set_title(f"New Train: section {section_id}")
+            data_plotter.plot_matrix()
 
 
 if __name__ == "__main__":
