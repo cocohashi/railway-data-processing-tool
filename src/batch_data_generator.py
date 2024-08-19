@@ -22,9 +22,9 @@ class BatchDataGenerator:
     def __init__(self, data_path, **config):
         self.data_path = data_path
         self.config = config
+        self.max_files = config['batch-data-generator']['max-files']
 
         self.filenames = [filename for filename in os.listdir(data_path)]
-        self.max_files = 5
         self.temporal_len = 0
         self.spatial_len = 0
 

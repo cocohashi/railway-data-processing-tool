@@ -69,6 +69,11 @@ config = {
         # "S04": (371, 635),
     },
 
+    # Batch Data Generator
+    "batch-data-generator": {
+        "max-files": 3
+    },
+
     # Buffer Manager
     "buffer-manager": {
         "batch-time": 5,  # Time [s]
