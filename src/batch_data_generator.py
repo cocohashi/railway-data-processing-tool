@@ -24,7 +24,7 @@ class BatchDataGenerator:
         self.config = config
 
         self.filenames = [filename for filename in os.listdir(data_path)]
-        self.max_files = 3
+        self.max_files = 5
         self.temporal_len = 0
         self.spatial_len = 0
 

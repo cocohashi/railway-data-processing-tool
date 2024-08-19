@@ -70,7 +70,7 @@ class BufferManager:
         self.batch_buffer_rebase_flags = {key: False for key, _ in self.section_map.items()}
 
         # Chunk Buffer Config
-        self.chunk_buffer_num = 6
+        self.chunk_buffer_num = 12
         self.chunk_buffer = {key: [] for key, _ in self.section_map.items()}
 
         # Debug
@@ -134,6 +134,7 @@ class BufferManager:
 
             else:
                 self.batch_buffer_rebase_flags[section_id] = True
+                logger.info(f"REBASE FLAG TRUE ({section_id}):      :: {self.batch_buffer_rebase_flags}")
 
             if self.batch_buffer_rebase_flags[section_id]:
                 for chunk in self.generate_chunks():
@@ -190,7 +191,7 @@ class BufferManager:
             logger.info(f"BATCH BUFFER STATE  (CHUNK-GENERATOR) :: section-id: {section_id},"
                         f" section_status: {section_status}")
 
-            if any(section_status):
+            if any(section_status) and self.batch_buffer_rebase_flags[section_id]:
                 # Get the buffer index where the oldest train-event chunk is located
                 train_event_min_index = min([s for s, r in enumerate(section_status) if r])
                 if train_event_min_index == self.train_event_index_ref[index]:
@@ -206,6 +207,11 @@ class BufferManager:
 
                     # Delete section-id buffer
                     self.batch_buffer.update({section_id: []})
+
+                    # Update Rebased flag
+                    self.batch_buffer_rebase_flags[section_id] = False
+                    logger.info(
+                        f"REBASE FLAG FALSE !! ({section_id}):  :: {self.batch_buffer_rebase_flags}")
 
                     # Debug
                     logger.info(
