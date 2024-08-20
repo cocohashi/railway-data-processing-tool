@@ -160,17 +160,17 @@ class BufferManager:
                         else:
                             # Append chunk to section's chunk-buffer
                             self.chunk_buffer[section_id].append(chunk['train-data'])
-                            section_train_data = self.concat_matrix_list(self.chunk_buffer[section_id])
+                            concatenated_train_data = self.concat_matrix_list(self.chunk_buffer[section_id])
 
                             # Debug
                             logger.info(f"CONCAT CHUNKS: section-id: {section_id}: "
-                                        f"Capture-shape: {section_train_data.shape}")
+                                        f"Capture-shape: {concatenated_train_data.shape}")
 
                             # Delete chunk buffer of a section
                             self.chunk_buffer.update({section_id: []})
 
                             # Yield new concatenated chunk
-                            yield {"section-id": section_id, "complete": True, "train-data": section_train_data}
+                            yield {"section-id": section_id, "complete": True, "train-data": concatenated_train_data}
 
                 # Roll Buffer when rebased
                 if self.batch_buffer[section_id]:
