@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import time
 from uuid import uuid4
 
 import logging
@@ -54,6 +55,7 @@ class TrainDetector:
         return [{"section-id": list(section.keys())[0],
                  "batch-id": batch_id,
                  "status": self.train_detector(list(section.values())[0]),
+                 "initial-timestamp": time.time(),
                  "batch-data": list(section.values())[0]}
                 for section in self.section_batches]
 

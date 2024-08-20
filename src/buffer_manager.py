@@ -144,7 +144,7 @@ class BufferManager:
                     logger.info(f"BATCH BUFFER STATE: [REBASED]         :: section-id: {section_id}")
 
                     if not chunk['complete']:
-                        self.chunk_buffer[section_id].append(chunk['train-data'])
+                        self.chunk_buffer[section_id].append(chunk)
 
                         # Debug
                         logger.info(f"CHUNK BUFFER STATE: [NOT COMPLETED]   :: section-id: {section_id}: "
@@ -159,8 +159,16 @@ class BufferManager:
                             yield chunk
                         else:
                             # Append chunk to section's chunk-buffer
-                            self.chunk_buffer[section_id].append(chunk['train-data'])
-                            concatenated_train_data = self.concat_matrix_list(self.chunk_buffer[section_id])
+                            self.chunk_buffer[section_id].append(chunk)
+
+                            # Get chunk data
+                            chunk_train_data = [chunk['train-data'] for chunk in self.chunk_buffer[section_id]]
+
+                            # Concatenate train data
+                            concatenated_train_data = self.concat_matrix_list(chunk_train_data)
+
+                            # Get initial timestamp
+                            initial_timestamp = self.chunk_buffer[section_id][0]['initial-timestamp']
 
                             # Debug
                             logger.info(f"CONCAT CHUNKS: section-id: {section_id}: "
@@ -170,7 +178,10 @@ class BufferManager:
                             self.chunk_buffer.update({section_id: []})
 
                             # Yield new concatenated chunk
-                            yield {"section-id": section_id, "complete": True, "train-data": concatenated_train_data}
+                            yield {"section-id": section_id,
+                                   "initial-timestamp": initial_timestamp,
+                                   "complete": True,
+                                   "train-data": concatenated_train_data}
 
                 # Roll Buffer when rebased
                 if self.batch_buffer[section_id]:
@@ -205,6 +216,9 @@ class BufferManager:
                     # If there isn't train in the last batch mark chunk as complete
                     complete = not section_status[-1]
 
+                    # Get initial timestamp
+                    initial_timestamp = self.batch_buffer[section_id][0]['initial-timestamp']
+
                     # Delete section-id buffer
                     self.batch_buffer.update({section_id: []})
 
@@ -220,8 +234,9 @@ class BufferManager:
 
                     yield {
                         "section-id": section_id,
-                        "train-data": train_data,
-                        "complete": complete
+                        "initial-timestamp": initial_timestamp,
+                        "complete": complete,
+                        "train-data": train_data
                     }
 
     @staticmethod
