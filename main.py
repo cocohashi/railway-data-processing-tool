@@ -1,11 +1,13 @@
 import os
 import logging
+import asyncio
 
 os.environ['ENVIRONMENT'] = "develop"  # 'develop' and 'production' environments only allowed
 
 from src.data_plotter import DataPlotter
 from src.batch_data_generator import BatchDataGenerator
 from src.buffer_manager import BufferManager
+from src.json_file_manager import JsonFileManager
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
@@ -31,6 +33,7 @@ else:
     #  data_path: "..data/{project_name}/{file_extension}"
     #  day_path: "..data/{project_name}/{file_extension}/{year}/{month}/{day}"
     data_path = "../data/ETS"
+    output_path = "./test/output"
     # ----------------------------
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -71,8 +74,6 @@ config = {
 
     # Batch Data Generator
     "batch-data-generator": {
-        "max-files": 3,
-        "waiting-time": 0.1
         "max-files": 4,
         "waiting-time": 0.05
     },
@@ -84,6 +85,10 @@ config = {
         "section-train-speed-mean": [144, 144, 144, 144],  # Speed [Km / h]
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]
+    },
+
+    "json-file-manager": {
+        "max-file-size-mb": 3
     }
 }
 
@@ -92,22 +97,27 @@ config = {
 
 
 def main():
+    file_id = 1
     buffer_manager = BufferManager(**config)
     for batch in BatchDataGenerator(data_path, **config):
         for chunk in buffer_manager.generate_train_capture(batch):
-            section_id = chunk['section-id']
-            train_data = chunk['train-data']
-            initial_timestamp = chunk.get("initial-timestamp")
 
             # Debug
-            logger.info(f" -------> CHUNK GENERATED: section-id: {section_id}, train-data (shape): {train_data.shape}")
-            logger.info(f" -------> CHUNK GENERATED: section-id: {section_id}, train-data (shape): {train_data.shape}"
-                        f" initial-timestamp: {initial_timestamp}")
+            logger.info(
+                f" -------> CHUNK GENERATED {file_id}: section-id: {chunk['section-id']},"
+                f" train-data (shape): {chunk['train-data'].shape}"
+                f" initial-timestamp: {chunk.get('initial-timestamp')}")
 
             # Plot data
-            data_plotter = DataPlotter(chunk['train-data'], **config['plot-matrix'])
-            data_plotter.set_title(f"New Train: section {section_id}")
-            data_plotter.plot_matrix()
+            # data_plotter = DataPlotter(chunk['train-data'], **config['plot-matrix'])
+            # data_plotter.set_title(f"New Train: section {section_id}")
+            # data_plotter.plot_matrix()
+
+            # Save Chunk
+            JsonFileManager(output_path, chunk, file_id, **config)
+
+            # Update file-id
+            file_id += 1
 
 
 if __name__ == "__main__":
