@@ -128,32 +128,33 @@ class BufferManager:
                 self.batch_buffer[section_id].append(processed_batch_section_id)
 
                 # Debug
-                logger.info(
-                    f"BATCH BUFFER STATE  (FILLING)         :: section-id:"
-                    f" {section_id}, buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_batch_num}")
+                # logger.info(
+                #     f"BATCH BUFFER STATE  (FILLING)         :: section-id:"
+                #     f" {section_id}, buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_batch_num}")
 
             else:
                 self.batch_buffer_rebase_flags[section_id] = True
-                logger.info(f"REBASE FLAG TRUE ({section_id}):      :: {self.batch_buffer_rebase_flags}")
+                # Debug
+                # logger.info(f"REBASE FLAG TRUE ({section_id}):      :: {self.batch_buffer_rebase_flags}")
 
             if self.batch_buffer_rebase_flags[section_id]:
                 for chunk in self.generate_chunks():
                     section_id = chunk['section-id']
 
                     # Debug
-                    logger.info(f"BATCH BUFFER STATE: [REBASED]         :: section-id: {section_id}")
+                    # logger.info(f"BATCH BUFFER STATE: [REBASED]         :: section-id: {section_id}")
 
                     if not chunk['complete']:
                         self.chunk_buffer[section_id].append(chunk)
 
                         # Debug
-                        logger.info(f"CHUNK BUFFER STATE: [NOT COMPLETED]   :: section-id: {section_id}: "
-                                    f"buffer-length: {len(self.chunk_buffer[section_id])}")
+                        # logger.info(f"CHUNK BUFFER STATE: [NOT COMPLETED]   :: section-id: {section_id}: "
+                        #             f"buffer-length: {len(self.chunk_buffer[section_id])}")
 
                     else:
                         # Debug
-                        logger.info(f"CHUNK BUFFER STATE: [COMPLETED]       :: section-id: {section_id}: "
-                                    f"buffer-length: {len(self.chunk_buffer[section_id])}")
+                        # logger.info(f"CHUNK BUFFER STATE: [COMPLETED]       :: section-id: {section_id}: "
+                        #             f"buffer-length: {len(self.chunk_buffer[section_id])}")
 
                         if not self.chunk_buffer[section_id]:
                             yield chunk
@@ -171,8 +172,8 @@ class BufferManager:
                             initial_timestamp = self.chunk_buffer[section_id][0]['initial-timestamp']
 
                             # Debug
-                            logger.info(f"CONCAT CHUNKS: section-id: {section_id}: "
-                                        f"Capture-shape: {concatenated_train_data.shape}")
+                            # logger.info(f"CONCAT CHUNKS: section-id: {section_id}: "
+                            #             f"Capture-shape: {concatenated_train_data.shape}")
 
                             # Delete chunk buffer of a section
                             self.chunk_buffer.update({section_id: []})
@@ -190,8 +191,8 @@ class BufferManager:
 
                     # Debug
                     section_status = [batch['status'] for batch in self.batch_buffer[section_id]]
-                    logger.info(f"BATCH BUFFER STATE  (ROLLING)         :: section-id: {section_id},"
-                                f" section_status: {section_status}")
+                    # logger.info(f"BATCH BUFFER STATE  (ROLLING)         :: section-id: {section_id},"
+                    #             f" section_status: {section_status}")
 
     def generate_chunks(self):
         for index, section_id in enumerate(self.section_ids):
@@ -199,8 +200,8 @@ class BufferManager:
             section_status = [batch['status'] for batch in self.batch_buffer[section_id]]
 
             # Debug
-            logger.info(f"BATCH BUFFER STATE  (CHUNK-GENERATOR) :: section-id: {section_id},"
-                        f" section_status: {section_status}")
+            # logger.info(f"BATCH BUFFER STATE  (CHUNK-GENERATOR) :: section-id: {section_id},"
+            #             f" section_status: {section_status}")
 
             if any(section_status) and self.batch_buffer_rebase_flags[section_id]:
                 # Get the buffer index where the oldest train-event chunk is located
@@ -224,13 +225,15 @@ class BufferManager:
 
                     # Update Rebased flag
                     self.batch_buffer_rebase_flags[section_id] = False
-                    logger.info(
-                        f"REBASE FLAG FALSE !! ({section_id}):  :: {self.batch_buffer_rebase_flags}")
 
                     # Debug
-                    logger.info(
-                        f"NEW CHUNK GENERATED                   :: section-id: {section_id}, complete: {complete},"
-                        f" train_data (shape): {train_data.shape}")
+                    # logger.info(
+                    #     f"REBASE FLAG FALSE !! ({section_id}):  :: {self.batch_buffer_rebase_flags}")
+
+                    # Debug
+                    # logger.info(
+                    #     f"NEW CHUNK GENERATED                   :: section-id: {section_id}, complete: {complete},"
+                    #     f" train_data (shape): {train_data.shape}")
 
                     yield {
                         "section-id": section_id,
