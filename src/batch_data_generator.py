@@ -23,6 +23,7 @@ class BatchDataGenerator:
         self.data_path = data_path
         self.config = config
         self.max_files = config['batch-data-generator']['max-files']
+        self.batch_waiting_time = config['batch-data-generator']['waiting-time']
 
         self.filenames = [filename for filename in os.listdir(data_path)]
         self.temporal_len = 0
@@ -33,7 +34,6 @@ class BatchDataGenerator:
         self.dt = self.N * (1 / self.fs)  # Time [s]
 
         self.batch_temporal_length = config['buffer-manager']['batch-time']  # Time [s]
-        self.batch_waiting_time = config['buffer-manager']['waiting-time']
 
     def __iter__(self):
         for sample in range(self.max_files):
