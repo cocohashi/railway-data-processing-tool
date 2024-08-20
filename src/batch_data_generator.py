@@ -33,10 +33,10 @@ class BatchDataGenerator:
         self.dt = self.N * (1 / self.fs)  # Time [s]
 
         self.batch_temporal_length = config['buffer-manager']['batch-time']  # Time [s]
+        self.batch_waiting_time = config['buffer-manager']['waiting-time']
 
     def __iter__(self):
         for sample in range(self.max_files):
-            t0 = time.time()
             data = DataLoader(fullpath=os.path.join(self.data_path, self.filenames[sample])).get_data()
             filtered_data = SignalProcessor(data=data, **self.config).get_filtered_data()
             self.temporal_len = filtered_data.shape[0]
@@ -46,8 +46,7 @@ class BatchDataGenerator:
 
             for x in range(0, self.temporal_len, new_batch_idx):
                 batch = filtered_data[x: x + new_batch_idx, :]
-                t1 = time.time()
-                # time.sleep(max(0.0, self.batch_temporal_length - (t1 - t0)))
+                time.sleep(self.batch_waiting_time)
                 yield batch
 
     @staticmethod

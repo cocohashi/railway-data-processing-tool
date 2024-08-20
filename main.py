@@ -71,7 +71,8 @@ config = {
 
     # Batch Data Generator
     "batch-data-generator": {
-        "max-files": 3
+        "max-files": 3,
+        "waiting-time": 0.1
     },
 
     # Buffer Manager
