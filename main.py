@@ -73,6 +73,8 @@ config = {
     "batch-data-generator": {
         "max-files": 3,
         "waiting-time": 0.1
+        "max-files": 4,
+        "waiting-time": 0.05
     },
 
     # Buffer Manager
@@ -95,9 +97,12 @@ def main():
         for chunk in buffer_manager.generate_train_capture(batch):
             section_id = chunk['section-id']
             train_data = chunk['train-data']
+            initial_timestamp = chunk.get("initial-timestamp")
 
             # Debug
             logger.info(f" -------> CHUNK GENERATED: section-id: {section_id}, train-data (shape): {train_data.shape}")
+            logger.info(f" -------> CHUNK GENERATED: section-id: {section_id}, train-data (shape): {train_data.shape}"
+                        f" initial-timestamp: {initial_timestamp}")
 
             # Plot data
             data_plotter = DataPlotter(chunk['train-data'], **config['plot-matrix'])
