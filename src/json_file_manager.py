@@ -27,34 +27,41 @@ logger.addHandler(handler)
 
 class JsonFileManager:
     def __init__(self, output_path: str, chunk: dict, file_id=0, **config):
+        # Paths
         self.output_path = output_path
         self.fullpath = None
-        self.chunk = chunk
-        self.file_id = file_id
-        self.config = config
-        self.json_schema = json_schema
 
+        # Chunk
+        self.chunk = chunk
         self.train_data = chunk["train-data"]
         self.section_id = chunk["section-id"]
         self.initial_timestamp = chunk["initial-timestamp"]
 
+        # File
+        self.file_id = file_id
+        self.file = None
+
+        # Config
+        self.config = config
         self.spatial_resolution = config["buffer-manager"]["spatial-resolution"]
         self.max_file_size_mb = config["json-file-manager"]["max-file-size-mb"]
+        self.fs = config["signal"]["fs"]
 
+        # Signal
+        self.dt = 1 / self.fs
+
+        # JSON schema
+        self.json_schema = json_schema
         self.uuid = str(uuid4())
         self.temporal_samples = self.train_data.shape[0]
         self.spatial_samples = self.train_data.shape[1]
         self.max_file_size_b = self.max_file_size_mb * pow(2, 20)
-        self.temporal_length_weight_ration = 0.002906885053135184
-        self.file_batch_size = self.max_file_size_b * self.temporal_length_weight_ration
+        self.temporal_length_weight_ratio = 0.002906885053135184
+        self.file_batch_size = self.max_file_size_b * self.temporal_length_weight_ratio
         self.total_file_chunks = round(self.temporal_samples / self.file_batch_size)
         self.file_batch_temporal_length = round(self.total_file_chunks * self.file_batch_size)
 
-        self.file = None
-
-        logger.info(f"file_batch_size: {self.file_batch_size}")
-        logger.info(f"file_batch_temporal_length: {self.file_batch_temporal_length}")
-        logger.info(f"total_file_chunks: {self.total_file_chunks}")
+        # Run File Handler
         asyncio.run(self.file_handler())
 
     async def __aenter__(self):
