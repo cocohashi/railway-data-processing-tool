@@ -132,12 +132,17 @@ class JsonFileManager:
                 file_chunk_indexes = (index, index + round(self.file_batch_size))
                 train_data_chunk = self.train_data[file_chunk_indexes[0]: file_chunk_indexes[1], :]
 
+                # Compute file-chunk's initial-timestamp
+                initial_timestamp = self.json_schema['info']['initial_timestamp']
+                chunk_initial_timestamp = initial_timestamp + index * self.dt
+
                 # Convert data to base64
                 train_data_base64 = await self.matrix_to_base64_string(train_data_chunk)
 
                 # Update JSON schema
                 file_chunk_num = i + 1
-                self.json_schema.update({"file_chunk": file_chunk_num})
+                self.json_schema["info"].update({"initial_timestamp": chunk_initial_timestamp})
+                self.json_schema["info"].update({"file_chunk": file_chunk_num})
                 self.json_schema.update({"strain": train_data_base64})
 
                 # Get fullpath
