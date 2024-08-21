@@ -72,7 +72,6 @@ class JsonFileManager:
     async def serialize_bytes(self, matrix):
         with open(self.binary_fullpath, "wb") as file:
             json_bytearray = json.dumps(self.json_schema).encode('ascii')
-            print("json_bytearray", len(json_bytearray))
             file.write(struct.pack('<H', len(json_bytearray)))
             file.write(json_bytearray)
             np.save(file, matrix.astype(np.float16))
