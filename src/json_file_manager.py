@@ -5,6 +5,7 @@ import base64
 import struct
 import asyncio
 import traceback
+import numpy as np
 
 from uuid import uuid4
 
@@ -30,6 +31,7 @@ class JsonFileManager:
         # Paths
         self.output_path = output_path
         self.fullpath = None
+        self.binary_fullpath = None
 
         # Chunk
         self.chunk = chunk
@@ -45,6 +47,7 @@ class JsonFileManager:
         self.config = config
         self.spatial_resolution = config["buffer-manager"]["spatial-resolution"]
         self.max_file_size_mb = config["json-file-manager"]["max-file-size-mb"]
+        self.save_binary = config["json-file-manager"]["save-binary"]
         self.fs = config["signal"]["fs"]
 
         # Signal
@@ -73,8 +76,16 @@ class JsonFileManager:
 
     # SERIALIZE JSON
     async def serialize(self):
-        with open(self.fullpath, "w", encoding="utf-8") as write:
-            json.dump(self.json_schema, write, indent=4)
+        with open(self.fullpath, "w", encoding="utf-8") as file:
+            json.dump(self.json_schema, file, indent=4)
+
+    async def serialize_bytes(self, matrix):
+        with open(self.binary_fullpath, "wb") as file:
+            json_bytearray = json.dumps(self.json_schema).encode('ascii')
+            print("json_bytearray", len(json_bytearray))
+            file.write(struct.pack('<H', len(json_bytearray)))
+            file.write(json_bytearray)
+            np.save(file, matrix.astype(np.float16))
 
     async def update_json_schema(self):
         """
@@ -144,17 +155,21 @@ class JsonFileManager:
                 self.json_schema["info"].update({"temporal_samples": train_data_chunk.shape[0]})
                 self.json_schema["info"].update({"initial_timestamp": chunk_initial_timestamp})
                 self.json_schema["info"].update({"file_chunk": file_chunk_num})
-                self.json_schema.update({"strain": train_data_base64})
 
                 # Get fullpath
-                filename = f"test_{self.file_id:02d}_part_{file_chunk_num:02d}.json"
-                self.fullpath = os.path.join(self.output_path, filename)
+                filename = f"test_{self.file_id:02d}_part_{file_chunk_num:02d}"
+                self.fullpath = os.path.join(self.output_path, f"{filename}.json")
+                self.binary_fullpath = os.path.join(self.output_path, f"{filename}.bin")
 
                 # Debug
                 # logger.info(f"saving file-chunks... train-data-chunk-size: {file_chunk_indexes}")
 
                 # Save JSON schema
-                await self.serialize()
+                if self.save_binary:
+                    await self.serialize_bytes(train_data_chunk)
+                else:
+                    self.json_schema.update({"strain": train_data_base64})
+                    await self.serialize()
 
             except Exception as e:
                 logger.error(f"JSON SERIALIZATION ERROR: {e}")

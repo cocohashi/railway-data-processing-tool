@@ -88,7 +88,8 @@ config = {
     },
 
     "json-file-manager": {
-        "max-file-size-mb": 3
+        "max-file-size-mb": 3,
+        "save-binary": False
     }
 }
 
@@ -101,7 +102,6 @@ def main():
     buffer_manager = BufferManager(**config)
     for batch in BatchDataGenerator(data_path, **config):
         for chunk in buffer_manager.generate_train_capture(batch):
-
             # Debug
             logger.info(
                 f" -------> CHUNK GENERATED {file_id}: section-id: {chunk['section-id']},"
@@ -109,6 +109,7 @@ def main():
                 f" initial-timestamp: {chunk.get('initial-timestamp')}")
 
             # Plot data
+            # section_id = chunk['section-id']
             # data_plotter = DataPlotter(chunk['train-data'], **config['plot-matrix'])
             # data_plotter.set_title(f"New Train: section {section_id}")
             # data_plotter.plot_matrix()
