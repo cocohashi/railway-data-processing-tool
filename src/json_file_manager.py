@@ -141,6 +141,7 @@ class JsonFileManager:
 
                 # Update JSON schema
                 file_chunk_num = i + 1
+                self.json_schema["info"].update({"temporal_samples": train_data_chunk.shape[0]})
                 self.json_schema["info"].update({"initial_timestamp": chunk_initial_timestamp})
                 self.json_schema["info"].update({"file_chunk": file_chunk_num})
                 self.json_schema.update({"strain": train_data_base64})
