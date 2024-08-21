@@ -1,10 +1,11 @@
 import os
 import numpy as np
-
 import logging
+from dotenv import load_dotenv
 
 from src.train_detector import TrainDetector
-from src.data_plotter import DataPlotter
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger

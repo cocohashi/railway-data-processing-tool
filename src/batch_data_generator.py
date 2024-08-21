@@ -2,9 +2,12 @@ import os
 import logging
 import numpy as np
 import time
+from dotenv import load_dotenv
 
 from src.data_loader import DataLoader
 from src.signal_processor import SignalProcessor
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger

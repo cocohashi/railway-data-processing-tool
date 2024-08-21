@@ -8,9 +8,11 @@ import traceback
 import numpy as np
 
 from uuid import uuid4
+from dotenv import load_dotenv
 
 from src.schema import json_schema
 
+load_dotenv()
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
 # -------------------------------------------------------------------------------------------------------------------

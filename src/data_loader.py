@@ -1,8 +1,10 @@
 import os
 import logging
-
 import json
 import numpy as np
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger

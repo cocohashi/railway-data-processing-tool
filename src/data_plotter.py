@@ -1,8 +1,11 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-
 import logging
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger

@@ -2,6 +2,9 @@ import os
 import logging
 import numpy as np
 from scipy import signal
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger

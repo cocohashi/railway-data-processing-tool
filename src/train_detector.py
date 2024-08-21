@@ -1,9 +1,11 @@
 import os
 import numpy as np
 import time
-from uuid import uuid4
-
 import logging
+from uuid import uuid4
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -------------------------------------------------------------------------------------------------------------------
 # Set Logger
