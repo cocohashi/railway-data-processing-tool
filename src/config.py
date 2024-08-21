@@ -33,9 +33,15 @@ config = {
         "S03": (331, 370),
     },
 
+    # Train Detector
+    "train-detector": {
+        "spatial-window": 2,
+        "detection-threshold": 3
+    },
+
     # Batch Data Generator
     "batch-data-generator": {
-        "max-files": 4,
+        "max-files": 3,
         "waiting-time": 0.05
     },
 

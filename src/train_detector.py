@@ -15,8 +15,8 @@ class TrainDetector:
         self.section_map = config['section-map']
 
         # Detection Parameters
-        self.spatial_window = 2
-        self.detection_threshold = 3
+        self.spatial_window = config['train-detector']['spatial-window']
+        self.detection_threshold = config['train-detector']['detection-threshold']
 
         # Train Detection
         self.section_batches = self.compute_section_batches()
