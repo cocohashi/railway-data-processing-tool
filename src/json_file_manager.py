@@ -5,6 +5,7 @@ import struct
 import asyncio
 import traceback
 import numpy as np
+from datetime import datetime
 
 from uuid import uuid4
 from dotenv import load_dotenv
@@ -22,6 +23,7 @@ class JsonFileManager:
         self.output_path = output_path
         self.fullpath = None
         self.binary_fullpath = None
+        self.output_day_path = None
 
         # Chunk
         self.chunk = chunk
@@ -53,6 +55,7 @@ class JsonFileManager:
         self.file_batch_size = self.max_file_size_b * self.temporal_length_weight_ratio
         self.total_file_chunks = round(self.temporal_samples / self.file_batch_size)
         self.file_batch_temporal_length = round(self.total_file_chunks * self.file_batch_size)
+        self.file_chunk_num = 0
 
         # Run File Handler
         asyncio.run(self.file_handler())
@@ -123,6 +126,34 @@ class JsonFileManager:
 
         return my_bytearray_base64_encoded.decode('ascii')
 
+    def make_output_dirs(self):
+        # Exterior Data Path
+        if not os.path.isdir(self.output_path):
+            os.makedirs(self.output_path)
+
+        # Get actual year, month and day
+        initial_datetime = datetime.fromtimestamp(self.initial_timestamp)
+
+        self.output_day_path = os.path.join(self.output_path, str(initial_datetime.year),
+                                            f"{initial_datetime.month:02d}",
+                                            f"{initial_datetime.day:02d}")
+
+        logger.debug(f"Saving data in path: {self.output_day_path}")
+
+        if not os.path.isdir(self.output_day_path):
+            os.makedirs(self.output_day_path)
+
+    def get_fullpath(self):
+        initial_datetime = datetime.fromtimestamp(self.initial_timestamp)
+
+        filename = (
+            f"{self.section_id}_{initial_datetime.hour:02d}_{initial_datetime.minute:02d}_{initial_datetime.second:02d}"
+            f"_part_{self.file_chunk_num:02d}")
+
+        logger.info(f"Saving data as filename: {filename}")
+        self.fullpath = os.path.join(self.output_day_path, f"{filename}.json")
+        self.binary_fullpath = os.path.join(self.output_day_path, f"{filename}.bin")
+
     async def file_handler(self):
         await self.update_json_schema()
 
@@ -133,30 +164,33 @@ class JsonFileManager:
                 train_data_chunk = self.train_data[file_chunk_indexes[0]: file_chunk_indexes[1], :]
 
                 # Compute file-chunk's initial-timestamp
-                initial_timestamp = self.json_schema['info']['initial_timestamp']
-                chunk_initial_timestamp = initial_timestamp + index * self.dt
+                chunk_initial_timestamp = self.initial_timestamp + index * self.dt
 
                 # Convert data to base64
                 train_data_base64 = await self.matrix_to_base64_string(train_data_chunk)
 
                 # Update JSON schema
-                file_chunk_num = i + 1
+                self.file_chunk_num = i + 1
                 self.json_schema["info"].update({"temporal_samples": train_data_chunk.shape[0]})
                 self.json_schema["info"].update({"initial_timestamp": chunk_initial_timestamp})
-                self.json_schema["info"].update({"file_chunk": file_chunk_num})
+                self.json_schema["info"].update({"file_chunk": self.file_chunk_num})
 
-                # Get fullpath
-                filename = f"test_{self.file_id:02d}_part_{file_chunk_num:02d}"
-                self.fullpath = os.path.join(self.output_path, f"{filename}.json")
-                self.binary_fullpath = os.path.join(self.output_path, f"{filename}.bin")
+                # Make output dirs and get full paths
+                self.make_output_dirs()
+                self.get_fullpath()
 
-                # Debug
-                logger.debug(f"saving file-chunks... train-data-chunk-size: {file_chunk_indexes}")
+                # Get fullpath (for debugging purposes) -------------------------------------
+                # filename = f"test_{self.file_id:02d}_part_{file_chunk_num:02d}"
+                # self.fullpath = os.path.join(self.output_path, f"{filename}.json")
+                # self.binary_fullpath = os.path.join(self.output_path, f"{filename}.bin")
+                # ---------------------------------------------------------------------------
 
                 # Save JSON schema
                 if self.save_binary:
+                    logger.debug(f"Saving JSON (.json) file-chunks... Size: {file_chunk_indexes}")
                     await self.serialize_bytes(train_data_chunk)
                 else:
+                    logger.debug(f"Saving binary (.bin) file-chunks... Size: {file_chunk_indexes}")
                     self.json_schema.update({"strain": train_data_base64})
                     await self.serialize()
 
