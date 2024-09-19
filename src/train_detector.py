@@ -32,6 +32,11 @@ class TrainDetector:
 
     def train_detector(self, section):
         buff_rms = self.get_rms(section)
+
+        # Debug -------------------------------------------------------
+        logger.debug(f"[RMS MEAN]: {round(np.mean(buff_rms), 5)}")
+        # -------------------------------------------------------------
+
         detected_idx = np.where(buff_rms > self.detection_threshold)[0]
         _, counts = np.unique(np.diff(detected_idx), return_counts=True)
 
