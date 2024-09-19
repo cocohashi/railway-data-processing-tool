@@ -58,7 +58,13 @@ class JsonFileManager:
         self.file_chunk_num = 0
 
         # Run File Handler
-        asyncio.run(self.file_handler())
+        if not os.environ['ENVIRONMENT'] == 'dev':
+            # TODO: Production Environment (Python 3.6)
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.file_handler())
+        else:
+            # TODO: Development Environment (Python > 3.6)
+            asyncio.run(self.file_handler())
 
     async def __aenter__(self):
         await self.serialize()
