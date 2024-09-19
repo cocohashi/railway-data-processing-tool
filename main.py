@@ -14,9 +14,9 @@ logger = load_logger(__name__)
 
 logger.info(f"ENVIRONMENT: {os.environ['ENVIRONMENT']}")
 
-if not os.environ['ENVIRONMENT'] == 'develop':
+if not os.environ['ENVIRONMENT'] == 'dev':
     # ----- Production Path -----
-    data_path = ""
+    output_path = "../rail_output"
     # ----------------------------
 else:
     # ----- Development Path -----
@@ -24,6 +24,7 @@ else:
     #  data_path: "..data/{project_name}/{file_extension}"
     #  day_path: "..data/{project_name}/{file_extension}/{year}/{month}/{day}"
     data_path = "../data/ETS"
+    # data_path = "../data/das_f"
     output_path = "./test/output"
     # ----------------------------
 
@@ -44,6 +45,7 @@ parser.add_argument(
 )
 
 
+# TODO: Development Environment
 def main(args=None):
     args = parser.parse_args(args)
     file_id = 1
@@ -76,6 +78,32 @@ def main(args=None):
 
             # Update file-id
             file_id += 1
+
+
+# TODO: Production Environment.
+def get_buffer_manager():
+    buffer_manager = BufferManager(**config)
+    return buffer_manager
+
+
+def capture_train(batch, buffer_manager, binary=True, save=True):
+    file_id = 1
+    if binary:
+        config['json-file-manager']['save-binary'] = True
+
+    for chunk in buffer_manager.generate_train_capture(batch):
+        # Debug
+        logger.info(
+            f" --------> CHUNK GENERATED {file_id}: section-id: {chunk['section-id']},"
+            f" train-data (shape): {chunk['train-data'].shape}"
+            f" initial-timestamp: {chunk.get('initial-timestamp')}")
+
+        # Save Chunk
+        if save:
+            JsonFileManager(output_path, chunk, file_id, **config)
+
+        # Update file-id
+        file_id += 1
 
 
 if __name__ == "__main__":
