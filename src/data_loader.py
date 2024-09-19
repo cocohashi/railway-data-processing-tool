@@ -29,6 +29,7 @@ class DataLoader:
         self.data = np.ndarray(shape=(0, 0))
         self.base_data = None
         self.rail_view_data = None
+        self.transpose = False
 
         if not os.path.exists(self.fullpath):
             logger.warning(
@@ -85,7 +86,7 @@ class DataLoader:
     # GET STRAIN DATA FROM NUMPY ARRAY
     # ///////////////////////////////////////////////////////////////
     def get_npy_data(self):
-        self.data = np.load(self.fullpath).T
+        self.data = np.load(self.fullpath).T if self.transpose else np.load(self.fullpath)
         self.temporal_len = self.data.shape[0]
         self.spatial_len = self.data.shape[1]
 
