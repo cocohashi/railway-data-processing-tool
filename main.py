@@ -16,15 +16,15 @@ logger.info(f"ENVIRONMENT: {os.environ['ENVIRONMENT']}")
 
 if not os.environ['ENVIRONMENT'] == 'dev':
     # ----- Production Path -----
-    output_path = "../rail_output"
+    output_path = "../output"
     # ----------------------------
 else:
     # ----- Development Path -----
     # TODO: Development environment
     #  data_path: "..data/{project_name}/{file_extension}"
     #  day_path: "..data/{project_name}/{file_extension}/{year}/{month}/{day}"
-    data_path = "../data/ETS"
-    # data_path = "../data/das_f"
+    # data_path = "../data/ETS"
+    data_path = "../data/das_f/2024/09/18/unwrap"
     output_path = "./test/output"
     # ----------------------------
 

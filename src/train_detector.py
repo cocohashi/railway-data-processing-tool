@@ -45,9 +45,8 @@ class TrainDetector:
         return False
 
     def compute_section_status(self):
-        batch_id = uuid4()
         return [{"section-id": list(section.keys())[0],
-                 "batch-id": batch_id,
+                 "batch-id": uuid4(),
                  "status": self.train_detector(list(section.values())[0]),
                  "initial-timestamp": time.time(),
                  "batch-data": list(section.values())[0]}
