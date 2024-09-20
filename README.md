@@ -19,7 +19,7 @@ In this method the data storage will follow these conventions:
 
 3) The data will be saved in the path: `/{proyect_root_path}/output/{year}/{month}/{day}`
 
-4) Stored filenames will be named with the convention; ``{section-id}_{hour}_{minute}_{second}_part_{XX}``
+4) Stored filenames will be named with the convention; ``{hour}_{minute}_{second}_{section-id}_part_{XX}``
 
 > NOTE: 
 > 

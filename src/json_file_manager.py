@@ -153,7 +153,7 @@ class JsonFileManager:
         initial_datetime = datetime.fromtimestamp(self.initial_timestamp)
 
         filename = (
-            f"{self.section_id}_{initial_datetime.hour:02d}_{initial_datetime.minute:02d}_{initial_datetime.second:02d}"
+            f"{initial_datetime.hour:02d}_{initial_datetime.minute:02d}_{initial_datetime.second:02d}_{self.section_id}"
             f"_part_{self.file_chunk_num:02d}")
 
         logger.info(f"Saving data as filename: {filename}")
