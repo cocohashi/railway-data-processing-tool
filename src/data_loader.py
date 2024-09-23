@@ -29,7 +29,7 @@ class DataLoader:
         self.data = np.ndarray(shape=(0, 0))
         self.base_data = None
         self.rail_view_data = None
-        self.transpose = False
+        self.transpose = True
 
         if not os.path.exists(self.fullpath):
             logger.warning(
