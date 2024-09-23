@@ -28,9 +28,9 @@ config = {
 
     # Section Map
     "section-map": {
-        "S01": (95, 200),
+        # "S01": (200, 300),
         "S02": (201, 330),
-        "S03": (331, 370),
+        "S03": (0, 370),
     },
 
     # Train Detector
@@ -41,7 +41,7 @@ config = {
 
     # Batch Data Generator
     "batch-data-generator": {
-        "max-files": 3,
+        "max-files": 8,
         "waiting-time": 0.05
     },
 
