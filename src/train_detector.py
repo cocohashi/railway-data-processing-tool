@@ -46,7 +46,7 @@ class TrainDetector:
 
     def compute_section_status(self):
         return [{"section-id": list(section.keys())[0],
-                 "batch-id": uuid4(),
+                 # "batch-id": uuid4(),
                  "status": self.train_detector(list(section.values())[0]),
                  "initial-timestamp": time.time(),
                  "batch-data": list(section.values())[0]}
@@ -58,3 +58,10 @@ class TrainDetector:
 
     def get_section_batches(self):
         return self.section_batches
+
+    def get_temporal_length(self):
+        return self.batch.shape[0]
+
+    def get_spatial_length(self):
+        return self.batch.shape[1]
+
