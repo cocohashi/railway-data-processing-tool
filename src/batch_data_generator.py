@@ -29,7 +29,7 @@ class BatchDataGenerator:
         self.batch_temporal_length = config['buffer-manager']['batch-time']  # Time [s]
 
     def __iter__(self):
-        for sample in range(self.max_files):
+        for sample in range(min(self.max_files, len(self.filenames))):
             data = DataLoader(fullpath=os.path.join(self.data_path, self.filenames[sample])).get_data()
             filtered_data = SignalProcessor(data=data, **self.config).get_filtered_data()
             self.temporal_len = filtered_data.shape[0]
