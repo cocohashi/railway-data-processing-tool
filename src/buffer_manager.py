@@ -20,11 +20,11 @@ class BufferManager:
         self.section_map = config['section-map']
 
         # Batch Manager Config
-        self.batch_time = config['buffer-manager']['batch-time']  # Time [s]
-        self.spatial_resolution = config['buffer-manager']['spatial-resolution']  # Space [m]
-        self.section_train_speed_mean = config['buffer-manager']['section-train-speed-mean']  # Speed [Km / h]
-        self.start_margin_time = config['buffer-manager']['start-margin-time']  # Time [s]
-        self.end_margin_time = config['buffer-manager']['end-margin-time']  # Time [s]
+        self.batch_time = config['params']['temporal-resolution']  # Time [s]
+        self.spatial_resolution = config['params']['spatial-resolution']  # Space [m]
+        self.section_train_speed_mean = config['params']['section-train-speed-mean']  # Speed [Km / h]
+        self.start_margin_time = config['client']['start-margin-time']  # Time [s]
+        self.end_margin_time = config['client']['end-margin-time']  # Time [s]
 
         # Local variables (inputs)
         self.dt = self.N * (1 / self.fs)  # Time [s]
@@ -120,6 +120,7 @@ class BufferManager:
                     f" {section_id}, buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_batch_num}")
 
             else:
+                logger.info(f"setting TRUE rebase flag, section: {section_id}")
                 self.batch_buffer_rebase_flags[section_id] = True
                 # Debug
                 # logger.info(f"REBASE FLAG TRUE ({section_id}):      :: {self.batch_buffer_rebase_flags}")
@@ -194,7 +195,9 @@ class BufferManager:
             if any(section_status) and self.batch_buffer_rebase_flags[section_id]:
                 # Get the buffer index where the oldest train-event chunk is located
                 train_event_min_index = min([s for s, r in enumerate(section_status) if r])
-                if train_event_min_index == self.train_event_index_ref[index]:
+                train_event_max_index = max([s for s, r in enumerate(section_status) if r])
+
+                if (train_event_min_index == self.train_event_index_ref[index]):
                     # Select batches from buffer to generate a chunk
                     batch_data = [batch['batch-data'] for i, batch in enumerate(self.batch_buffer[section_id])
                                   if i >= (self.buffer_batch_num - self.num_batches_to_save[index])]

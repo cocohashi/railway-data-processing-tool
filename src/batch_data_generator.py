@@ -26,7 +26,7 @@ class BatchDataGenerator:
         self.fs = config['signal']['fs']  # Frequency [Hz]
         self.dt = self.N * (1 / self.fs)  # Time [s]
 
-        self.batch_temporal_length = config['buffer-manager']['batch-time']  # Time [s]
+        self.batch_temporal_length = config['params']['temporal-resolution']  # Time [s]
 
     def __iter__(self):
         for sample in range(min(self.max_files, len(self.filenames))):

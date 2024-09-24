@@ -17,16 +17,15 @@ logger.info(f"ENVIRONMENT: {os.environ['ENVIRONMENT']}")
 
 if not os.environ['ENVIRONMENT'] == 'dev':
     # ----- Production Path -----
-    output_path = "../output"
+    output_path = config['path']['output-prod']
     # ----------------------------
 else:
     # ----- Development Path -----
     # TODO: Development environment
     #  data_path: "..data/{project_name}/{file_extension}"
     #  day_path: "..data/{project_name}/{file_extension}/{year}/{month}/{day}"
-    data_path = "../data/ETS"
-    # data_path = "../data/das_f/2024/09/18/unwrap"
-    output_path = "./test/output"
+    data_path = config['path']['data-dev']
+    output_path = config['path']['output-dev']
     # ----------------------------
 
 # Set Argument Parser
@@ -54,7 +53,7 @@ def main(args=None):
         config['batch-data-generator']['max-files'] = args.files
 
     if args.binary:
-        config['json-file-manager']['save-binary'] = True
+        config['client']['save-binary'] = True
 
     # buffer_manager = BufferManager(**config)
     buffer_manager_rt = BufferManagerRT(**config)
@@ -93,7 +92,7 @@ def get_buffer_manager():
 
 def capture_train(batch, buffer_manager_rt, binary=True):
     if binary:
-        config['json-file-manager']['save-binary'] = True
+        config['client']['save-binary'] = True
 
     for chunk in buffer_manager_rt.generate_train_capture(batch):
         JsonFileManagerRT(output_path, chunk, **config)

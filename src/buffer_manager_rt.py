@@ -23,14 +23,15 @@ class BufferManagerRT:
         self.section_ids = list(self.section_map.keys())
 
         # JSON File Manager Config
-        self.max_file_size_mb = config["json-file-manager"]["max-file-size-mb"]
+        self.max_file_size_mb = config["client"]["max-file-size-mb"]
 
-        # Batch Manager Config
-        self.batch_time = config['buffer-manager']['batch-time']  # Time [s]
-        self.start_margin_time = config['buffer-manager']['start-margin-time']  # Time [s]
-        self.end_margin_time = config['buffer-manager']['end-margin-time']  # Time [s]
-        self.temporal_length_weight_ratio = 0.002906885053135184
-        self.batch_buffer_temporal_length = self.max_file_size_mb * pow(2, 20) * self.temporal_length_weight_ratio
+        # Buffer Manager Config
+        self.file_matrix_size_ratio = config['params']['file-matrix-size-ratio']
+        self.batch_buffer_temporal_length = self.max_file_size_mb * pow(2, 20) * self.file_matrix_size_ratio
+
+        # Client's Side Buffer Manager Config
+        self.start_margin_time = config['client']['start-margin-time']  # Time [s]
+        self.end_margin_time = config['client']['end-margin-time']  # Time [s]
 
         # Batch Buffer Config
         self.batch_buffer = {key: [] for key, _ in self.section_map.items()}

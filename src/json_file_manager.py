@@ -37,9 +37,9 @@ class JsonFileManager:
 
         # Config
         self.config = config
-        self.spatial_resolution = config["buffer-manager"]["spatial-resolution"]
-        self.max_file_size_mb = config["json-file-manager"]["max-file-size-mb"]
-        self.save_binary = config["json-file-manager"]["save-binary"]
+        self.spatial_resolution = config["params"]["spatial-resolution"]
+        self.max_file_size_mb = config["client"]["max-file-size-mb"]
+        self.save_binary = config["client"]["save-binary"]
         self.fs = config["signal"]["fs"]
 
         # Signal
@@ -51,8 +51,8 @@ class JsonFileManager:
         self.temporal_samples = self.train_data.shape[0]
         self.spatial_samples = self.train_data.shape[1]
         self.max_file_size_b = self.max_file_size_mb * pow(2, 20)
-        self.temporal_length_weight_ratio = 0.002906885053135184
-        self.file_batch_size = self.max_file_size_b * self.temporal_length_weight_ratio
+        self.file_matrix_size_ratio = config['params']['file-matrix-size-ratio']
+        self.file_batch_size = self.max_file_size_b * self.file_matrix_size_ratio
         self.total_file_chunks = round(self.temporal_samples / self.file_batch_size)
         self.file_batch_temporal_length = round(self.total_file_chunks * self.file_batch_size)
         self.file_chunk_num = 0
