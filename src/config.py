@@ -9,13 +9,13 @@ config = {
     # Section Map
     "section-map": {
         # "S01": (200, 300),
-        "S02": (201, 330),
-        "S03": (0, 370),
+        # "S02": (300, 500),
+        "S03": (0, 600),
     },
 
     # Client
     "client": {
-        "max-file-size-mb": 3,
+        "max-file-size-mb": 20,
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]
@@ -51,7 +51,9 @@ config = {
         "temporal-resolution": 5,  # Time [s]
         "spatial-resolution": 5,  # Space [m]
         "section-train-speed-mean": [144, 144, 144, 144],  # Speed [Km / h]
-        "file-matrix-size-ratio": 0.002906885053135184
+        "bytes-pixel-ratio": 1.9836151336393466,
+        "dev-batch-shape": (1024, 2478),
+        "prod-batch-shape": (4096, 5625)
     },
 
     # TODO: Debugging Purpose Parameters
