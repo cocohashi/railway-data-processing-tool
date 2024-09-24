@@ -55,14 +55,10 @@ def main(args=None):
     if args.binary:
         config['client']['save-binary'] = True
 
-    # buffer_manager = BufferManager(**config)
     buffer_manager_rt = BufferManagerRT(**config)
 
     for batch in BatchDataGenerator(data_path, **config):
-        # data_plotter = DataPlotter(batch, **config['plot-matrix'])
-        # data_plotter.plot_matrix()
-
-        logger.debug("BUFFER INFO :: =========================================")
+        logger.debug("BUFFER INFO :: ================================================================================")
         for chunk in buffer_manager_rt.generate_train_capture(batch):
             # Debug
             logger.info(
@@ -81,7 +77,7 @@ def main(args=None):
                 data_plotter.set_title(f"New Train: section {section_id}. Chunk num: {file_chunk}.\nchunk-id: {uuid}")
                 data_plotter.plot_matrix()
 
-        logger.debug("========================================================\n\n")
+        logger.debug("===========================================================================================\n\n")
 
 
 # TODO: Production Environment.
