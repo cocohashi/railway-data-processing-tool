@@ -28,6 +28,7 @@ class BufferManagerRT:
         self.start_margin_time = config['client']['start-margin-time']  # Time [s]
         self.end_margin_time = config['client']['end-margin-time']  # Time [s]
         self.max_file_size_mb_list = config["client"]["max-file-size-mb-list"]  # List of each section's file-sizes [MB]
+        self.max_total_time = config["client"]["max-total-time"]
         self.max_file_size_mb_dict = self.get_max_file_size_mb_dict()
 
         # Params
@@ -74,6 +75,8 @@ class BufferManagerRT:
         logger.debug(f"self.to_active_state_index_ref: {self.to_active_state_index_ref}")
         logger.debug(f"self.to_inactive_state_index_ref: {self.to_inactive_state_index_ref}")
         logger.debug(f"self.max_margin_times: {self.max_margin_times} seconds")
+        logger.debug(
+            f"MAX FILE SIZE: {self.get_max_file_size_mb()} MBytes to wait {self.max_total_time} seconds in each capture")
         logger.debug("------------------------------------------------------------------------------------------------")
 
     def validate_index_ref(self):
@@ -104,6 +107,9 @@ class BufferManagerRT:
 
         return {key: int((self.max_file_size_mb_dict[key] * pow(2, 20)) / value) for key, value in
                 batch_total_bytes.items()}
+
+    def get_max_file_size_mb(self):
+        return (self.max_total_time * self.bytes_pixel_ratio * self.batch_shape[0]) / (self.dt * pow(2, 20))
 
     def generate_train_capture(self, batch):
         train_detector = TrainDetector(batch, **self.config)

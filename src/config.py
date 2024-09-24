@@ -15,10 +15,11 @@ config = {
 
     # Client
     "client": {
-        "max-file-size-mb-list": [3, 1],
+        "max-file-size-mb-list": [20, 20],
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]
+        "max-total-time": 120  # Time [s]
     },
 
     # TODO: Application's Parameters
@@ -53,7 +54,7 @@ config = {
         "section-train-speed-mean": [144, 144, 144, 144],  # Speed [Km / h]
         "bytes-pixel-ratio": 1.9836151336393466,
         "dev-batch-shape": (1024, 2478),
-        "prod-batch-shape": (4096, 5625)
+        "prod-batch-shape": (4096, 5625),
     },
 
     # TODO: Debugging Purpose Parameters
