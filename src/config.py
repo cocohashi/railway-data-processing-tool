@@ -15,7 +15,7 @@ config = {
 
     # Client
     "client": {
-        "max-file-size-mb-list": [3, 5],
+        "max-file-size-mb-list": [3, 1],
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]

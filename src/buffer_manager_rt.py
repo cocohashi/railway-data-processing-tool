@@ -53,7 +53,17 @@ class BufferManagerRT:
         self.to_inactive_state_index_ref = {key: value - int(self.end_margin_time / (self.batch_shape[0] * self.dt)) for
                                             key, value in self.buffer_sizes.items()}
 
+        self.max_margin_times = {key: self.batch_shape[0] * self.dt * value for key, value in self.buffer_sizes.items()}
+
+        # self.validate_index_ref()
         self.debug_info()
+
+    @staticmethod
+    def concat_matrix_list(matrix_list):
+        new_matrix = np.ndarray((0, matrix_list[0].shape[1]))
+        for matrix in matrix_list:
+            new_matrix = np.concatenate([new_matrix, matrix])
+        return new_matrix
 
     def debug_info(self):
         logger.debug(f"BUFFER MANAGER INFO ---------------------------------------------------------------------------")
@@ -63,14 +73,17 @@ class BufferManagerRT:
         logger.debug(f"self.section_map_sizes: {self.section_map_sizes}")
         logger.debug(f"self.to_active_state_index_ref: {self.to_active_state_index_ref}")
         logger.debug(f"self.to_inactive_state_index_ref: {self.to_inactive_state_index_ref}")
+        logger.debug(f"self.max_margin_times: {self.max_margin_times} seconds")
         logger.debug("------------------------------------------------------------------------------------------------")
 
-    @staticmethod
-    def concat_matrix_list(matrix_list):
-        new_matrix = np.ndarray((0, matrix_list[0].shape[1]))
-        for matrix in matrix_list:
-            new_matrix = np.concatenate([new_matrix, matrix])
-        return new_matrix
+    def validate_index_ref(self):
+        for section_id, value in self.buffer_sizes.items():
+            section_to_active_state_index_ref = self.to_active_state_index_ref[section_id]
+            section_to_inactive_state_index_ref = self.to_inactive_state_index_ref[section_id]
+            if (section_to_active_state_index_ref + 1) > value or section_to_inactive_state_index_ref < 1:
+                raise ValueError(
+                    f"In section {section_id}, any margin time cannot be higher than "
+                    f"'{self.max_margin_times[section_id]}'")
 
     def get_max_file_size_mb_dict(self):
         res = {}
