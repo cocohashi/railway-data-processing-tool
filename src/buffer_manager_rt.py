@@ -24,12 +24,11 @@ class BufferManagerRT:
         self.section_map = config['section-map']
         self.section_ids = list(self.section_map.keys())
 
-        # JSON File Manager Config
-        self.max_file_size_mb = config["client"]["max-file-size-mb"]
-
         # Client's Side Buffer Manager Config
         self.start_margin_time = config['client']['start-margin-time']  # Time [s]
         self.end_margin_time = config['client']['end-margin-time']  # Time [s]
+        self.max_file_size_mb_list = config["client"]["max-file-size-mb-list"]  # List of each section's file-sizes [MB]
+        self.max_file_size_mb_dict = self.get_max_file_size_mb_dict()
 
         # Params
         self.bytes_pixel_ratio = config['params']['bytes-pixel-ratio']
@@ -58,7 +57,7 @@ class BufferManagerRT:
 
     def debug_info(self):
         logger.debug(f"BUFFER MANAGER INFO ---------------------------------------------------------------------------")
-        logger.debug(f"self.max_file_size_mb: {self.max_file_size_mb}")
+        logger.debug(f"self.max_file_size_mb_list: {self.max_file_size_mb_list}")
         logger.debug(f"self.batch_shape: {self.batch_shape}")
         logger.debug(f"self.buffer_sizes: {self.buffer_sizes}")
         logger.debug(f"self.section_map_sizes: {self.section_map_sizes}")
@@ -73,11 +72,24 @@ class BufferManagerRT:
             new_matrix = np.concatenate([new_matrix, matrix])
         return new_matrix
 
+    def get_max_file_size_mb_dict(self):
+        res = {}
+        for i, key in enumerate(self.section_ids):
+            if len(self.section_ids) != len(self.max_file_size_mb_list):
+                raise ValueError(
+                    f"Defined sections_ids ({self.section_ids}) and maximum file's sizes {self.max_file_size_mb_list}"
+                    f" do not match. Please add/reduce more sections or file-size values."
+                )
+
+            else:
+                res.update({key: self.max_file_size_mb_list[i]})
+        return res
+
     def get_buffer_sizes(self):
         batch_total_bytes = {key: self.bytes_pixel_ratio * value[0] * value[1] for key, value in
                              self.section_map_sizes.items()}
 
-        return {key: int((self.max_file_size_mb * pow(2, 20)) / value) for key, value in
+        return {key: int((self.max_file_size_mb_dict[key] * pow(2, 20)) / value) for key, value in
                 batch_total_bytes.items()}
 
     def generate_train_capture(self, batch):

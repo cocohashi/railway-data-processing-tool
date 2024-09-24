@@ -9,13 +9,13 @@ config = {
     # Section Map
     "section-map": {
         # "S01": (200, 300),
-        # "S02": (300, 500),
-        "S03": (0, 600),
+        "S02": (100, 300),
+        "S03": (100, 150),
     },
 
     # Client
     "client": {
-        "max-file-size-mb": 20,
+        "max-file-size-mb-list": [3, 5],
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]

@@ -36,7 +36,6 @@ class JsonFileManagerRT:
         # Config
         self.config = config
         self.spatial_resolution = config["params"]["spatial-resolution"]
-        self.max_file_size_mb = config["client"]["max-file-size-mb"]
         self.save_binary = config["client"]["save-binary"]
         self.fs = config["signal"]["fs"]
 
