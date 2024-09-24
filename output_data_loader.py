@@ -135,9 +135,9 @@ if __name__ == "__main__":
     kwargs = dict(
         output_path="./test/output",
         # datetime_obj=datetime(2024, 8, 22, 9, 32, 54),  # .bin
-        datetime_obj=datetime(2024, 8, 22, 12, 35, 39),  # .json
-        section_id="S02",
-        extension=".json"
+        datetime_obj=datetime(2024, 9, 24, 13, 56, 23),  # .json
+        section_id="S03",
+        extension=".bin"
     )
 
     OutputDataLoader(**kwargs)
