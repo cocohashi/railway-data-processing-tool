@@ -8,16 +8,16 @@ config = {
     # -------------------------------------------------------------------------------------------------------------
     # Section Map
     "section-map": {
-        "S01": (2200, 2580),
+        "S01": (0, 110),
         # "S02": (100, 300),
         # "S03": (100, 150),
     },
 
     # Client
     "client": {
-        "file-size-mb-list": [2],
+        "file-size-mb-list": [1],
         "save-binary": True,
-        "start-margin-time": 10,  # Time [s]
+        "start-margin-time": 0,  # Time [s]
         "end-margin-time": 0,  # Time [s]
         "total-time-max": 60  # Time [s]
     },
@@ -57,7 +57,8 @@ config = {
         "prod-batch-shape": (4096, 5625),
         "section-limit": 10,  # Maximum number of sections
         "section-index-limit": 1000,  # Maximum upper index limit
-        "total-time-max-limit": 300  # Maximum time of the Maximum time established by the client [s]
+        "total-time-max-limit": 300, # Maximum time of the Maximum time established by the client [s]
+        "buffer-size-lower-limit": 4
     },
 
     # TODO: Debugging Purpose Parameters

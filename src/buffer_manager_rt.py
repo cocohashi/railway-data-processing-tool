@@ -35,6 +35,7 @@ class BufferManagerRT:
         self.bytes_pixel_ratio = config['params']['bytes-pixel-ratio']
         self.batch_shape = config['params']['dev-batch-shape'] if os.environ['ENVIRONMENT'] == 'dev' \
             else config['params']['prod-batch-shape']
+        self.buffer_size_lower_limit = config['params']['buffer-size-lower-limit']
 
         # Batch Buffer Config
         self.batch_buffer = {key: [] for key, _ in self.section_map.items()}
@@ -61,6 +62,7 @@ class BufferManagerRT:
         # Validations
         self.validate_index_ref()
         self.validate_file_size_limit()
+        self.validate_buffer_size()
         self.debug_info()
 
     @staticmethod
@@ -115,13 +117,22 @@ class BufferManagerRT:
             section_to_inactive_state_index_ref = self.to_inactive_state_index_ref[section_id]
             if (section_to_active_state_index_ref + 1) > value or section_to_inactive_state_index_ref < 1:
                 raise ValueError(
-                    f"In section {section_id}, any margin time cannot be higher than "
-                    f"'{self.max_margin_times[section_id]}'")
+                    f"In section {section_id}, any 'margin-time' cannot be higher than "
+                    f"'{self.max_margin_times[section_id]}'. "
+                    f"INCREASE 'file-size' or REDUCE the section's 'selected-area' to increase "
+                    f"'margin-time' limit for this section.")
 
     def validate_file_size_limit(self):
         if len([*filter(lambda x: x >= self.file_size_limit, self.file_size_mb_list)]) > 0:
             raise ValueError(f"Any file-size value given '{self.file_size_mb_list}' "
                              f"should not be higher than {round(self.file_size_limit, 3)} MByte")
+
+    def validate_buffer_size(self):
+        for section_id, value in self.buffer_sizes.items():
+            if value < self.buffer_size_lower_limit:
+                raise ValueError(f"Buffer-size in section {section_id} is {value}."
+                                 f"INCREASE 'file-size' or REDUCE the section 'selected-area' to increase buffer's "
+                                 f"size value for this section.")
 
     # Train Capture Generation
     def generate_train_capture(self, batch):
