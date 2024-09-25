@@ -8,11 +8,12 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 from src.logger import load_logger
-from src.config import config
+from src.config import get_config
 from src.data_plotter import DataPlotter
 
 load_dotenv()
 logger = load_logger(__name__)
+config = get_config()
 
 
 class OutputDataLoader:

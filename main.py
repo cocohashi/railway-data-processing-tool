@@ -7,11 +7,12 @@ from src.batch_data_generator import BatchDataGenerator
 from src.buffer_manager import BufferManager
 from src.buffer_manager_rt import BufferManagerRT
 from src.json_file_manager_rt import JsonFileManagerRT
-from src.config import config
+from src.config import get_config
 from src.logger import load_logger
 
 load_dotenv()
 logger = load_logger(__name__)
+config = get_config()
 
 logger.info(f"ENVIRONMENT: {os.environ['ENVIRONMENT']}")
 

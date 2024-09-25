@@ -8,7 +8,7 @@ config = {
     # -------------------------------------------------------------------------------------------------------------
     # Section Map
     "section-map": {
-        # "S01": (200, 300),
+        "S01": (200, 300),
         "S02": (100, 300),
         "S03": (100, 150),
     },
@@ -47,7 +47,7 @@ config = {
         "detection-threshold": 3
     },
 
-    # Buffer Manager
+    # Params
     "params": {
         "temporal-resolution": 5,  # Time [s]
         "spatial-resolution": 5,  # Space [m]
@@ -55,6 +55,7 @@ config = {
         "bytes-pixel-ratio": 1.9836151336393466,
         "dev-batch-shape": (1024, 2478),
         "prod-batch-shape": (4096, 5625),
+        "section-limit": 10,
     },
 
     # TODO: Debugging Purpose Parameters
@@ -80,4 +81,16 @@ config = {
     }
 }
 
+
 # -----------------------------------------------------------------------------------------------------------------
+
+def validate_section_limit():
+    section_ids = list(config['section-map'].keys())
+    section_limit = config['params']['section-limit']
+    if len(section_ids) > section_limit:
+        raise ValueError(f"The number of sections defined should not be higher than {section_limit}")
+
+
+def get_config():
+    validate_section_limit()
+    return config
