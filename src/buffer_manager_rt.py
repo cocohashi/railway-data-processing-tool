@@ -55,8 +55,11 @@ class BufferManagerRT:
                                             key, value in self.buffer_sizes.items()}
 
         self.max_margin_times = {key: self.batch_shape[0] * self.dt * value for key, value in self.buffer_sizes.items()}
+        self.file_size_limit = self.get_file_size_limit()
 
+        # Validations
         self.validate_index_ref()
+        self.validate_file_size_limit()
         self.debug_info()
 
     @staticmethod
@@ -76,7 +79,7 @@ class BufferManagerRT:
         logger.debug(f"self.to_inactive_state_index_ref: {self.to_inactive_state_index_ref}")
         logger.debug(f"self.max_margin_times: {self.max_margin_times} seconds")
         logger.debug(
-            f"MAX FILE SIZE: {self.get_file_size_limit()} MBytes to wait {self.total_time_max} seconds in each capture")
+            f"MAX FILE SIZE: {self.file_size_limit} MBytes to wait {self.total_time_max} seconds in each capture")
         logger.debug("------------------------------------------------------------------------------------------------")
 
     # Getters
@@ -113,6 +116,11 @@ class BufferManagerRT:
                 raise ValueError(
                     f"In section {section_id}, any margin time cannot be higher than "
                     f"'{self.max_margin_times[section_id]}'")
+
+    def validate_file_size_limit(self):
+        if len([*filter(lambda x: x >= self.file_size_limit, self.file_size_mb_list)]) > 0:
+            raise ValueError(f"Any file-size value given '{self.file_size_mb_list}' "
+                             f"should not be higher than {round(self.file_size_limit, 3)} MByte")
 
     # Train Capture Generation
     def generate_train_capture(self, batch):
