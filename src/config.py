@@ -94,7 +94,7 @@ def validate_section_limit():
 
 def validate_total_time_max():
     total_time_max = config['client']['total-time-max']
-    total_time_max_limit = config['client']['total-time-max-limit']
+    total_time_max_limit = config['params']['total-time-max-limit']
     if total_time_max > total_time_max_limit:
         raise ValueError(f"Total time max should not be higher than {total_time_max_limit}")
 
