@@ -48,13 +48,14 @@ class BufferManagerRT:
         self.initial_timestamp = None
 
         self.buffer_sizes = self.get_buffer_sizes()
-        self.to_active_state_index_ref = {key: int(self.start_margin_time / (self.batch_shape[0] * self.dt)) for key, _
-                                          in self.section_map.items()}
+        self.to_active_state_index_ref = {key: int(self.start_margin_time / (self.batch_shape[0] * self.dt) + 1) for
+                                          key, _ in self.section_map.items()}
 
-        self.to_inactive_state_index_ref = {key: value - int(self.end_margin_time / (self.batch_shape[0] * self.dt)) for
-                                            key, value in self.buffer_sizes.items()}
+        self.to_inactive_state_index_ref = {key: value - int(self.end_margin_time / (self.batch_shape[0] * self.dt) + 1)
+                                            for key, value in self.buffer_sizes.items()}
 
-        self.max_margin_times = {key: self.batch_shape[0] * self.dt * value for key, value in self.buffer_sizes.items()}
+        self.max_margin_times = {key: self.batch_shape[0] * self.dt * (value - 1) for key, value in
+                                 self.buffer_sizes.items()}
         self.file_size_limit = self.get_file_size_limit()
 
         # Validations
