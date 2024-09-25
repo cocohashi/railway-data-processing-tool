@@ -55,7 +55,8 @@ config = {
         "bytes-pixel-ratio": 1.9836151336393466,
         "dev-batch-shape": (1024, 2478),
         "prod-batch-shape": (4096, 5625),
-        "section-limit": 10,
+        "section-limit": 10,  # Maximum number of sections
+        "total-time-max-limit": 300  # Maximum time of the Maximum time established by the client [s]
     },
 
     # TODO: Debugging Purpose Parameters
@@ -91,6 +92,14 @@ def validate_section_limit():
         raise ValueError(f"The number of sections defined should not be higher than {section_limit}")
 
 
+def validate_total_time_max():
+    total_time_max = config['client']['total-time-max']
+    total_time_max_limit = config['client']['total-time-max-limit']
+    if total_time_max > total_time_max_limit:
+        raise ValueError(f"Total time max should not be higher than {total_time_max_limit}")
+
+
 def get_config():
     validate_section_limit()
+    validate_total_time_max()
     return config
