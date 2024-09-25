@@ -27,9 +27,9 @@ class BufferManagerRT:
         # Client's Side Buffer Manager Config
         self.start_margin_time = config['client']['start-margin-time']  # Time [s]
         self.end_margin_time = config['client']['end-margin-time']  # Time [s]
-        self.max_file_size_mb_list = config["client"]["max-file-size-mb-list"]  # List of each section's file-sizes [MB]
-        self.max_total_time = config["client"]["max-total-time"]
-        self.max_file_size_mb_dict = self.get_max_file_size_mb_dict()
+        self.total_time_max = config["client"]["total-time-max"]
+        self.file_size_mb_list = config["client"]["file-size-mb-list"]  # List of each section's file-sizes [MB]
+        self.file_size_mb_dict = self.get_file_size_mb_dict()
 
         # Params
         self.bytes_pixel_ratio = config['params']['bytes-pixel-ratio']
@@ -56,7 +56,7 @@ class BufferManagerRT:
 
         self.max_margin_times = {key: self.batch_shape[0] * self.dt * value for key, value in self.buffer_sizes.items()}
 
-        # self.validate_index_ref()
+        self.validate_index_ref()
         self.debug_info()
 
     @staticmethod
@@ -68,7 +68,7 @@ class BufferManagerRT:
 
     def debug_info(self):
         logger.debug(f"BUFFER MANAGER INFO ---------------------------------------------------------------------------")
-        logger.debug(f"self.max_file_size_mb_list: {self.max_file_size_mb_list}")
+        logger.debug(f"self.file_size_mb_list: {self.file_size_mb_list}")
         logger.debug(f"self.batch_shape: {self.batch_shape}")
         logger.debug(f"self.buffer_sizes: {self.buffer_sizes}")
         logger.debug(f"self.section_map_sizes: {self.section_map_sizes}")
@@ -76,9 +76,35 @@ class BufferManagerRT:
         logger.debug(f"self.to_inactive_state_index_ref: {self.to_inactive_state_index_ref}")
         logger.debug(f"self.max_margin_times: {self.max_margin_times} seconds")
         logger.debug(
-            f"MAX FILE SIZE: {self.get_max_file_size_mb()} MBytes to wait {self.max_total_time} seconds in each capture")
+            f"MAX FILE SIZE: {self.get_file_size_limit()} MBytes to wait {self.total_time_max} seconds in each capture")
         logger.debug("------------------------------------------------------------------------------------------------")
 
+    # Getters
+    def get_file_size_mb_dict(self):
+        res = {}
+        for i, key in enumerate(self.section_ids):
+            if len(self.section_ids) != len(self.file_size_mb_list):
+                raise ValueError(
+                    f"Defined sections_ids ({self.section_ids}) and maximum file's sizes {self.file_size_mb_list}"
+                    f" do not match. Please add/reduce more sections or file-size values."
+                )
+            else:
+                res.update({key: self.file_size_mb_list[i]})
+        return res
+
+    def get_buffer_sizes(self, m_byte=True):
+        batch_total_bytes = {key: self.bytes_pixel_ratio * value[0] * value[1] for key, value in
+                             self.section_map_sizes.items()}
+
+        r = pow(2, 20) if m_byte else 1
+        return {key: int((self.file_size_mb_dict[key] * r) / value) for key, value in
+                batch_total_bytes.items()}
+
+    def get_file_size_limit(self, m_byte=True):
+        r = pow(2, 20) if m_byte else 1
+        return (self.total_time_max * self.bytes_pixel_ratio * self.batch_shape[0]) / (self.dt * r)
+
+    #  Validations
     def validate_index_ref(self):
         for section_id, value in self.buffer_sizes.items():
             section_to_active_state_index_ref = self.to_active_state_index_ref[section_id]
@@ -88,29 +114,7 @@ class BufferManagerRT:
                     f"In section {section_id}, any margin time cannot be higher than "
                     f"'{self.max_margin_times[section_id]}'")
 
-    def get_max_file_size_mb_dict(self):
-        res = {}
-        for i, key in enumerate(self.section_ids):
-            if len(self.section_ids) != len(self.max_file_size_mb_list):
-                raise ValueError(
-                    f"Defined sections_ids ({self.section_ids}) and maximum file's sizes {self.max_file_size_mb_list}"
-                    f" do not match. Please add/reduce more sections or file-size values."
-                )
-
-            else:
-                res.update({key: self.max_file_size_mb_list[i]})
-        return res
-
-    def get_buffer_sizes(self):
-        batch_total_bytes = {key: self.bytes_pixel_ratio * value[0] * value[1] for key, value in
-                             self.section_map_sizes.items()}
-
-        return {key: int((self.max_file_size_mb_dict[key] * pow(2, 20)) / value) for key, value in
-                batch_total_bytes.items()}
-
-    def get_max_file_size_mb(self):
-        return (self.max_total_time * self.bytes_pixel_ratio * self.batch_shape[0]) / (self.dt * pow(2, 20))
-
+    # Train Capture Generation
     def generate_train_capture(self, batch):
         train_detector = TrainDetector(batch, **self.config)
         processed_batch = train_detector.get_section_status()

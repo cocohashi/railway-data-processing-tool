@@ -15,11 +15,11 @@ config = {
 
     # Client
     "client": {
-        "max-file-size-mb-list": [20, 20],
+        "file-size-mb-list": [5, 5],
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
         "end-margin-time": 20,  # Time [s]
-        "max-total-time": 120  # Time [s]
+        "total-time-max": 60  # Time [s]
     },
 
     # TODO: Application's Parameters
