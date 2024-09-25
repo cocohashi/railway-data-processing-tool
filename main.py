@@ -59,6 +59,7 @@ def main(args=None):
     buffer_manager_rt = BufferManagerRT(**config)
 
     for batch in BatchDataGenerator(data_path, **config):
+        logger.info(f"batch.shape: {batch.shape}")
         logger.debug("BUFFER INFO :: ================================================================================")
         for chunk in buffer_manager_rt.generate_train_capture(batch):
             # Debug

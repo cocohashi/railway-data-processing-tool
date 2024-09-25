@@ -8,17 +8,17 @@ config = {
     # -------------------------------------------------------------------------------------------------------------
     # Section Map
     "section-map": {
-        "S01": (200, 300),
-        "S02": (100, 300),
-        "S03": (100, 150),
+        "S01": (2200, 2580),
+        # "S02": (100, 300),
+        # "S03": (100, 150),
     },
 
     # Client
     "client": {
-        "file-size-mb-list": [10, 5],
+        "file-size-mb-list": [2],
         "save-binary": True,
         "start-margin-time": 10,  # Time [s]
-        "end-margin-time": 20,  # Time [s]
+        "end-margin-time": 0,  # Time [s]
         "total-time-max": 60  # Time [s]
     },
 
@@ -56,6 +56,7 @@ config = {
         "dev-batch-shape": (1024, 2478),
         "prod-batch-shape": (4096, 5625),
         "section-limit": 10,  # Maximum number of sections
+        "section-index-limit": 1000,  # Maximum upper index limit
         "total-time-max-limit": 300  # Maximum time of the Maximum time established by the client [s]
     },
 
@@ -92,6 +93,13 @@ def validate_section_limit():
         raise ValueError(f"The number of sections defined should not be higher than {section_limit}")
 
 
+def validate_section_index_limit():
+    section_index_limit = config['params']['section-index-limit']
+    section_upper_limits = [value[1] for key, value in config['section-map'].items()]
+    if len(list(filter(lambda x: x >= section_index_limit, section_upper_limits))) > 0:
+        raise ValueError(f"The upper limit of any section index, should not be higher than {section_index_limit}")
+
+
 def validate_total_time_max():
     total_time_max = config['client']['total-time-max']
     total_time_max_limit = config['params']['total-time-max-limit']
@@ -101,5 +109,6 @@ def validate_total_time_max():
 
 def get_config():
     validate_section_limit()
+    validate_section_index_limit()
     validate_total_time_max()
     return config
