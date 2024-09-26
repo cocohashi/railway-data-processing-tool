@@ -82,7 +82,8 @@ class BufferManagerRT:
         logger.debug(f"self.to_inactive_state_index_ref: {self.to_inactive_state_index_ref}")
         logger.debug(f"self.max_margin_times: {self.max_margin_times} seconds")
         logger.debug(
-            f"MAX FILE SIZE: {self.file_size_limit} MBytes to wait {self.total_time_max} seconds in each capture")
+            f"MAX FILE SIZE: {self.file_size_limit} MBytes to wait {round(self.total_time_max, 3)} seconds in"
+            f" each capture.")
         logger.debug("------------------------------------------------------------------------------------------------")
 
     # Getters
@@ -154,12 +155,9 @@ class BufferManagerRT:
                     f"buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_sizes[section_id]}")
 
             else:
-                logger.debug(f"setting TRUE rebase flag, section: {section_id}")
                 self.batch_buffer_rebase_flags[section_id] = True
-                logger.debug(f"rebase-flags {section_id}: {self.batch_buffer_rebase_flags}")
 
             if self.batch_buffer_rebase_flags[section_id]:
-                logger.debug(f"condition rebase-flags {section_id}: {self.batch_buffer_rebase_flags}")
 
                 for chunk in self.generate_chunks(section_id):
                     yield chunk
@@ -175,7 +173,6 @@ class BufferManagerRT:
                     # ---------------------------------------------------------------------------------
 
     def generate_chunks(self, section_id):
-        logger.debug(f"generating chunk in section {section_id} ...")
         # Get a list of the train-event status batches stored in the buffer for a particular section
         section_status = [batch['status'] for batch in self.batch_buffer[section_id]]
 
@@ -228,7 +225,7 @@ class BufferManagerRT:
                     logger.debug(
                         f"INITIAL (NEW) CHUNK GENERATED                   :: {chunk}")
                     # ------------------------------------------------------------------
-                    logger.info(
+                    logger.debug(
                         f"batch data len: {len(batch_data)} - buffer-size: {self.buffer_sizes[section_id]}")
 
                     # if len(batch_data) == self.buffer_size:
