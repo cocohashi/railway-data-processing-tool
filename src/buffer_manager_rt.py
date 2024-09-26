@@ -150,8 +150,8 @@ class BufferManagerRT:
 
                 # Debug
                 logger.debug(
-                    f"BATCH BUFFER STATE  (FILLING)         :: section-id:"
-                    f" {section_id}, buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_sizes[section_id]}")
+                    f"BATCH BUFFER STATE  (FILLING)         :: section-id:  {section_id}, "
+                    f"buffer-length: {len(self.batch_buffer[section_id])}/{self.buffer_sizes[section_id]}")
 
             else:
                 logger.debug(f"setting TRUE rebase flag, section: {section_id}")
