@@ -9,13 +9,13 @@ config = {
     # Section Map
     "section-map": {
         "S01": (0, 110),
-        # "S02": (100, 300),
-        # "S03": (100, 150),
+        "S02": (100, 200),
+        "S03": (200, 300),
     },
 
     # Client
     "client": {
-        "file-size-mb-list": [1],
+        "file-size-mb-list": [2, 2, 2],
         "save-binary": True,
         "start-margin-time": 0,  # Time [s]
         "end-margin-time": 0,  # Time [s]
@@ -34,7 +34,7 @@ config = {
 
     # Signal Processor
     "signal": {
-        "N": 5,  # int: Downsampling-Factor: Number of Samples to be downsampled
+        "N": 1,  # int: Downsampling-Factor: Number of Samples to be downsampled
         "f_order": 4,  # int: The order of the Butterworth filter.
         "Wn": 0.8,  # int or list: Cutoff frequencies of Butterworth filter
         "btype": "hp",  # str: Butterworth filter type. {‘lowpass’, ‘highpass’, ‘bandpass’, ‘bandstop’}, optional
@@ -43,8 +43,9 @@ config = {
 
     # Train Detector
     "train-detector": {
-        "spatial-window": 2,
-        "detection-threshold": 3
+        "spatial-window": 2,  # Number of adjacent samples to be considered as valid (mode 0)
+        "validity-percentage": 0.05,  # Percentage of valid samples, expressed in decimal (from 0 to 1) (mode 1)
+        "detection-threshold": 2,  # RMS Threshold value which marks a samples as valid (mode 0 or 1)
     },
 
     # Params
@@ -57,7 +58,7 @@ config = {
         "prod-batch-shape": (4096, 5625),
         "section-limit": 10,  # Maximum number of sections
         "section-index-limit": 1000,  # Maximum upper index limit
-        "total-time-max-limit": 300, # Maximum time of the Maximum time established by the client [s]
+        "total-time-max-limit": 300,  # Maximum time of the Maximum time established by the client [s]
         "buffer-size-lower-limit": 4
     },
 
